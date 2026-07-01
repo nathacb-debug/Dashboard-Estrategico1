@@ -1,0 +1,2282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoltEcuador - Dashboard Estratégico Multimatriz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para Gráficos Dinámicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons para Iconografía Moderna -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            bg: '#FBF8F6',      // Blanco crema cálido
+                            card: '#FFFFFF',    // Blanco puro para tarjetas
+                            cafe: '#8D7B68',    // Café mate elegante
+                            cafeLight: '#C8B6A6', // Café pastel claro
+                            rosa: '#F1DEC9',    // Rosa pastel / Arena suave
+                            coral: '#E78895',   // Coral suave para alertas
+                            accent: '#A4907C',  // Café intermedio
+                            verde: '#CCD5AE',   // Verde pastel
+                            azul: '#A8DADC',    // Azul pastel
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FBF8F6;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1DEC9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8D7B68;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+    <header class="bg-white border-b border-pastel-rosa shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logotipo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-2xl bg-pastel-cafe flex items-center justify-center text-white font-bold text-xl shadow-md border border-pastel-cafeLight">
+                        VE
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-pastel-cafe tracking-tight">VoltEcuador</h1>
+                        <p class="text-xs text-pastel-accent font-medium">Plataforma de Diagnóstico Multimatriz</p>
+                    </div>
+                </div>
+
+                <div class="text-right hidden sm:block">
+                    <span class="text-xs text-pastel-cafe font-semibold bg-pastel-bg border border-pastel-rosa px-3 py-1.5 rounded-xl">
+                        Simulador de Cuadrantes Gráficos
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MENÚ DE PESTAÑAS INTEGRAL -->
+        <div class="bg-pastel-rose/10 border-t border-pastel-rosa overflow-x-auto">
+            <nav class="max-w-7xl mx-auto px-4 flex space-x-2 py-2 md:py-3" aria-label="Tabs">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 flex items-center space-x-2 bg-pastel-cafe text-white shadow-sm">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Dashboard Principal</span>
+                </button>
+                <button onclick="switchTab('entorno')" id="tab-entorno" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="globe" class="w-4 h-4"></i>
+                    <span>PESTEL & Porter</span>
+                </button>
+                <button onclick="switchTab('valor')" id="tab-valor" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                    <span>Cadena de Valor</span>
+                </button>
+                <button onclick="switchTab('evaluacion')" id="tab-evaluacion" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="trending-up" class="w-4 h-4"></i>
+                    <span>EFE & EFI</span>
+                </button>
+                <button onclick="switchTab('foda')" id="tab-foda" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="grid" class="w-4 h-4"></i>
+                    <span>FODA Cruzado</span>
+                </button>
+                <button onclick="switchTab('matrices')" id="tab-matrices" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                    <span>Gráficos BCG & PEYEA</span>
+                </button>
+                <button onclick="switchTab('mckinsey')" id="tab-mckinsey" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="grid" class="w-4 h-4"></i>
+                    <span>McKinsey & Gran Estrategia</span>
+                </button>
+                <button onclick="switchTab('smart')" id="tab-smart" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="target" class="w-4 h-4"></i>
+                    <span>Objetivos SMART</span>
+                </button>
+                <button onclick="switchTab('cuantitativa')" id="tab-cuantitativa" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                    <span>MCPE & Ganadora</span>
+                </button>
+                <button onclick="switchTab('kpis')" id="tab-kpis" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium text-pastel-cafe hover:bg-pastel-rosa/40 transition-all duration-150 flex items-center space-x-2">
+                    <i data-lucide="activity" class="w-4 h-4"></i>
+                    <span>KPIs & Simulación</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- NOTIFICACIÓN DE SISTEMA DINÁMICO -->
+        <div class="mb-6 p-4 bg-pastel-rosa/20 border border-pastel-rosa rounded-2xl flex items-start space-x-3 shadow-xs">
+            <i data-lucide="sparkles" class="w-6 h-6 text-pastel-cafe flex-shrink-0 mt-0.5"></i>
+            <div class="text-xs sm:text-sm text-pastel-cafe">
+                <span class="font-bold">Ecosistema Estratégico Dinámico:</span> Ahora puedes crear tus propios KPIs de acuerdo a tus objetivos estratégicos y simularlos libremente.
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 1: DASHBOARD PRINCIPAL -->
+        <!-- ============================================ -->
+        <div id="view-dashboard" class="tab-content space-y-8">
+            <!-- Tarjetas de Resumen Rápido -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="dash-quick-cards">
+                <!-- Se inyecta dinámicamente con todos los KPIs activos -->
+            </div>
+
+            <!-- Gráficos y Panel de Objetivos SMART -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Gráfico de Atractivo de Estrategias -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Atractivo de Estrategias Ganadoras</h3>
+                            <p class="text-xs text-pastel-accent">Resultado de la ponderación de la Matriz Cuantitativa (MCPE)</p>
+                        </div>
+                        <span class="px-3 py-1 bg-pastel-rosa text-pastel-cafe rounded-full text-xs font-bold">Consolidado en Tiempo Real</span>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="chartMcpeGanadora"></canvas>
+                    </div>
+                </div>
+
+                <!-- Resumen Rápido de Objetivos SMART -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm flex flex-col justify-between space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Metas SMART & KPIs</h3>
+                        <p class="text-xs text-pastel-accent mb-4">Progreso dinámico de los objetivos formulados</p>
+                        
+                        <div id="dash-smart-list" class="space-y-4">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                    <button onclick="switchTab('smart')" class="w-full bg-pastel-cafe text-white p-2.5 rounded-xl text-xs font-bold hover:bg-pastel-accent transition-all flex items-center justify-center space-x-2">
+                        <span>Ver Todos los Objetivos</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Estado del Portafolio y Evolución de KPIs -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Diagnóstico de Cuadrantes -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Diagnóstico de Cuadrantes</h3>
+                        <p class="text-xs text-pastel-accent mb-4">Ubicación de VoltEcuador en planos estratégicos</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center border-b pb-2 text-xs">
+                                <span class="font-semibold text-pastel-cafe">PEYEA:</span>
+                                <span class="font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full" id="dash-peyea-status">Agresiva</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b pb-2 text-xs">
+                                <span class="font-semibold text-pastel-cafe">BCG (Líder):</span>
+                                <span class="font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full" id="dash-bcg-status">Estrella</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b pb-2 text-xs">
+                                <span class="font-semibold text-pastel-cafe">McKinsey (Promedio):</span>
+                                <span class="font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full" id="dash-mckinsey-status">Invertir / Crecer</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b pb-2 text-xs">
+                                <span class="font-semibold text-pastel-cafe">Gran Estrategia:</span>
+                                <span class="font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full" id="dash-gran-status">Cuadrante I</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-pastel-rosa/30 rounded-2xl text-center text-xxs text-pastel-cafe leading-relaxed mt-4">
+                        Los diagnósticos cambian automáticamente al alterar las calificaciones y porcentajes de las respectivas matrices.
+                    </div>
+                </div>
+
+                <!-- Gráfico de KPIs con Control de Simulación integrado -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-bold text-pastel-cafe">Evolución de KPIs de Rendimiento</h3>
+                            <p class="text-xs text-pastel-accent">Visualización del KPI seleccionado en la simulación</p>
+                        </div>
+                        <div class="flex items-center space-x-2 bg-pastel-bg px-3 py-1.5 rounded-xl border border-pastel-rosa">
+                            <span class="text-xs text-pastel-cafe font-semibold">Simulador de Meta:</span>
+                            <input type="range" id="kpi-simulator" min="50" max="150" value="100" oninput="simulateKpiData()" class="w-32 accent-pastel-cafe">
+                            <span id="simulator-label" class="text-xs font-bold text-pastel-cafe">100%</span>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="chartKpiEvolucion"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 2: PESTEL & PORTER DINÁMICOS -->
+        <!-- ============================================ -->
+        <div id="view-entorno" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- PESTEL Panel -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Variables PESTEL</h3>
+                            <p class="text-xs text-pastel-accent">Añade libremente factores a cada categoría del entorno</p>
+                        </div>
+                        <i data-lucide="globe" class="w-6 h-6 text-pastel-cafe"></i>
+                    </div>
+
+                    <div class="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- Categorías dinámicas -->
+                        <div id="pestel-accordion" class="space-y-4">
+                            <!-- Inyectado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PORTER DINÁMICO CON GRÁFICO DE RADAR -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm flex flex-col justify-between space-y-6">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-pastel-cafe">Las 5 Fuerzas de Porter</h3>
+                                <p class="text-xs text-pastel-accent">Define el poder y observa la deformación de la fuerza industrial</p>
+                            </div>
+                            <button onclick="addPorterForce()" class="text-xs bg-pastel-cafe hover:bg-pastel-accent text-white px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> <span>Nueva Fuerza</span>
+                            </button>
+                        </div>
+
+                        <!-- Gráfico de Radar de Porter -->
+                        <div class="h-64 mb-6">
+                            <canvas id="chartPorterRadar"></canvas>
+                        </div>
+
+                        <!-- Controles de Porter -->
+                        <div id="porter-forces-list" class="space-y-3 max-h-[250px] overflow-y-auto pr-2">
+                            <!-- Inyectado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 3: CADENA DE VALOR -->
+        <!-- ============================================ -->
+        <div id="view-valor" class="tab-content hidden space-y-8">
+            <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Cadena de Valor Completa (Michael Porter)</h3>
+                        <p class="text-xs text-pastel-accent">Analiza y personaliza las 4 actividades de soporte y las 5 actividades primarias para VoltEcuador</p>
+                    </div>
+                    <button onclick="addValueChainItem()" class="text-xs bg-pastel-cafe hover:bg-pastel-accent text-white px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1">
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span>Añadir Actividad</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="value-chain-container">
+                    <!-- Se inyecta dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 4: EFE & EFI CON AUTO-AJUSTE -->
+        <!-- ============================================ -->
+        <div id="view-evaluacion" class="tab-content hidden space-y-8">
+            <div class="p-4 bg-pastel-rosa/40 rounded-3xl flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div>
+                    <h4 class="text-sm font-bold text-pastel-cafe">Ajustador Matemático de Pesos</h4>
+                    <p class="text-xs text-pastel-accent">Suma exacta de pesos a 1.00 para mantener rigor académico</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="normalizeWeights('efi')" class="bg-pastel-cafe text-white text-xs px-4 py-2 rounded-xl font-bold hover:bg-pastel-accent transition-all">
+                        Auto-Ajustar Pesos EFI
+                    </button>
+                    <button onclick="normalizeWeights('efe')" class="bg-pastel-cafe text-white text-xs px-4 py-2 rounded-xl font-bold hover:bg-pastel-accent transition-all">
+                        Auto-Ajustar Pesos EFE
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- EFI -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Matriz EFI (Factores Internos)</h3>
+                            <p class="text-xs text-pastel-accent">Fortalezas (3-4) y Debilidades (1-2)</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold block mb-1" id="efi-total-badge">EFI: 2.85</span>
+                            <span class="text-xxs font-bold text-pastel-accent" id="efi-sum-badge">Suma: 1.00</span>
+                        </div>
+                    </div>
+
+                    <div id="efi-factors-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        <!-- Dinámico -->
+                    </div>
+
+                    <button onclick="addEfiFactor()" class="w-full bg-pastel-cafe/20 text-pastel-cafe p-3 rounded-2xl text-xs font-bold hover:bg-pastel-cafe/40 transition-all flex items-center justify-center space-x-1">
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span>Añadir Factor Interno</span>
+                    </button>
+                </div>
+
+                <!-- EFE -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Matriz EFE (Factores Externos)</h3>
+                            <p class="text-xs text-pastel-accent">Oportunidades (3-4) y Amenazas (1-2)</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold block mb-1" id="efe-total-badge">EFE: 2.68</span>
+                            <span class="text-xxs font-bold text-pastel-accent" id="efe-sum-badge">Suma: 1.00</span>
+                        </div>
+                    </div>
+
+                    <div id="efe-factors-container" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        <!-- Dinámico -->
+                    </div>
+
+                    <button onclick="addEfeFactor()" class="w-full bg-pastel-cafe/20 text-pastel-cafe p-3 rounded-2xl text-xs font-bold hover:bg-pastel-cafe/40 transition-all flex items-center justify-center space-x-1">
+                        <i data-lucide="plus" class="w-4 h-4"></i> <span>Añadir Factor Externo</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 5: FODA CRUZADO -->
+        <!-- ============================================ -->
+        <div id="view-foda" class="tab-content hidden space-y-8">
+            <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-pastel-cafe">Estrategias FODA Cruzadas</h3>
+                    <p class="text-xs text-pastel-accent">Mapea y diseña acciones cruzando factores FO, DO, FA y DA</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- FO -->
+                    <div class="p-5 bg-emerald-50/60 rounded-2xl border border-emerald-200/50 space-y-3">
+                        <div class="flex justify-between items-center text-emerald-800">
+                            <span class="text-sm font-bold flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i> <span>Estrategias FO (Ofensivas)</span></span>
+                            <button onclick="addFodaStrategy('FO')" class="text-xxs bg-emerald-700 text-white px-2 py-1 rounded-md font-semibold">Añadir</button>
+                        </div>
+                        <div id="foda-list-FO" class="space-y-2"></div>
+                    </div>
+
+                    <!-- DO -->
+                    <div class="p-5 bg-blue-50/60 rounded-2xl border border-blue-200/50 space-y-3">
+                        <div class="flex justify-between items-center text-blue-800">
+                            <span class="text-sm font-bold flex items-center space-x-1"><i data-lucide="refresh-cw" class="w-4 h-4"></i> <span>Estrategias DO (Reorientación)</span></span>
+                            <button onclick="addFodaStrategy('DO')" class="text-xxs bg-blue-700 text-white px-2 py-1 rounded-md font-semibold">Añadir</button>
+                        </div>
+                        <div id="foda-list-DO" class="space-y-2"></div>
+                    </div>
+
+                    <!-- FA -->
+                    <div class="p-5 bg-amber-50/60 rounded-2xl border border-amber-200/50 space-y-3">
+                        <div class="flex justify-between items-center text-amber-800">
+                            <span class="text-sm font-bold flex items-center space-x-1"><i data-lucide="shield" class="w-4 h-4"></i> <span>Estrategias FA (Defensivas)</span></span>
+                            <button onclick="addFodaStrategy('FA')" class="text-xxs bg-amber-700 text-white px-2 py-1 rounded-md font-semibold">Añadir</button>
+                        </div>
+                        <div id="foda-list-FA" class="space-y-2"></div>
+                    </div>
+
+                    <!-- DA -->
+                    <div class="p-5 bg-rose-50/60 rounded-2xl border border-pastel-coral/40 space-y-3">
+                        <div class="flex justify-between items-center text-pastel-coral">
+                            <span class="text-sm font-bold flex items-center space-x-1"><i data-lucide="alert-triangle" class="w-4 h-4"></i> <span>Estrategias DA (Supervivencia)</span></span>
+                            <button onclick="addFodaStrategy('DA')" class="text-xxs bg-rose-700 text-white px-2 py-1 rounded-md font-semibold">Añadir</button>
+                        </div>
+                        <div id="foda-list-DA" class="space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 6: MATRICES DE PORTAFOLIO GRÁFICAS (BCG & PEYEA) -->
+        <!-- ============================================ -->
+        <div id="view-matrices" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- MATRIZ BCG EN PLANO REAL -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Matriz BCG de Productos</h3>
+                            <p class="text-xs text-pastel-accent">Define el crecimiento (Y) y la participación (X) para ubicar tus productos</p>
+                        </div>
+                        <button onclick="addBcgItem()" class="text-xs bg-pastel-cafe hover:bg-pastel-accent text-white px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1">
+                            <i data-lucide="plus" class="w-4 h-4"></i> <span>Añadir Producto</span>
+                        </button>
+                    </div>
+
+                    <!-- Gráfico Plano Cartesiano BCG -->
+                    <div class="h-64 flex items-center justify-center bg-pastel-bg rounded-2xl relative border overflow-hidden">
+                        <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div class="border-r border-b border-pastel-rosa flex items-start justify-start p-2 text-[10px] font-bold text-pastel-cafe/40 bg-amber-50/10">ESTRELLA (Alto/Alto) ⭐</div>
+                            <div class="border-b border-pastel-rosa flex items-start justify-end p-2 text-[10px] font-bold text-pastel-cafe/40 bg-blue-50/10">INCÓGNITA (Alto/Bajo) ❓</div>
+                            <div class="border-r border-pastel-rosa flex items-end justify-start p-2 text-[10px] font-bold text-pastel-cafe/40 bg-green-50/10">VACA LECHERA (Bajo/Alto) 🐄</div>
+                            <div class="flex items-end justify-end p-2 text-[10px] font-bold text-pastel-cafe/40 bg-red-50/10">PERRO (Bajo/Bajo) 🐕</div>
+                        </div>
+                        <svg class="w-full h-full absolute" viewBox="0 0 200 200" id="bcg-svg">
+                            <!-- Los círculos se grafican aquí -->
+                        </svg>
+                    </div>
+
+                    <!-- Lista de productos BCG con controles cartesianos -->
+                    <div id="bcg-products-controls" class="space-y-3 max-h-[220px] overflow-y-auto pr-2">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <!-- MATRIZ PEYEA GRÁFICA -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Matriz PEYEA Dinámica</h3>
+                        <p class="text-xs text-pastel-accent">Ejes: Fuerza Financiera (FF), Ventaja Competitiva (VC), Estabilidad Entorno (EE) y Fuerza Industrial (FI)</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 bg-pastel-bg p-4 rounded-2xl border border-pastel-rosa/50 text-xs">
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Fortaleza Financiera (1 a 6)</label>
+                            <input type="number" id="peyea-ff" min="1" max="6" value="4.5" step="0.1" class="w-full p-2 border rounded-lg" oninput="drawPeyea()">
+                        </div>
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Fortaleza Industrial (1 a 6)</label>
+                            <input type="number" id="peyea-fi" min="1" max="6" value="5.0" step="0.1" class="w-full p-2 border rounded-lg" oninput="drawPeyea()">
+                        </div>
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Estabilidad Entorno (-1 a -6)</label>
+                            <input type="number" id="peyea-ee" min="-6" max="-1" value="-3.5" step="0.1" class="w-full p-2 border rounded-lg" oninput="drawPeyea()">
+                        </div>
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Ventaja Competitiva (-1 a -6)</label>
+                            <input type="number" id="peyea-vc" min="-6" max="-1" value="-2.0" step="0.1" class="w-full p-2 border rounded-lg" oninput="drawPeyea()">
+                        </div>
+                    </div>
+
+                    <div class="h-64 flex items-center justify-center bg-pastel-bg rounded-2xl relative border overflow-hidden">
+                        <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div class="border-r border-b border-dashed flex items-start justify-start p-2 text-[9px] font-bold text-pastel-cafe/30">CONSERVADOR</div>
+                            <div class="border-b border-dashed flex items-start justify-end p-2 text-[9px] font-bold text-pastel-cafe/30">AGRESIVO</div>
+                            <div class="border-r border-dashed flex items-end justify-start p-2 text-[9px] font-bold text-pastel-cafe/30">DEFENSIVO</div>
+                            <div class="flex items-end justify-end p-2 text-[9px] font-bold text-pastel-cafe/30">COMPETITIVO</div>
+                        </div>
+                        <svg class="w-full h-full absolute" viewBox="0 0 200 200" id="peyea-svg">
+                            <!-- SVG renderizado de PEYEA -->
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 7: MCKINSEY (GE 3X3) & GRAN ESTRATEGIA -->
+        <!-- ============================================ -->
+        <div id="view-mckinsey" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- MATRIZ MCKINSEY 3X3 DINÁMICA -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Matriz McKinsey-GE 3x3</h3>
+                            <p class="text-xs text-pastel-accent">Define el atractivo del mercado (Y) y la competitividad (X)</p>
+                        </div>
+                        <button onclick="addMckinseyItem()" class="text-xs bg-pastel-cafe hover:bg-pastel-accent text-white px-3 py-1.5 rounded-xl font-semibold flex items-center space-x-1">
+                            <i data-lucide="plus" class="w-4 h-4"></i> <span>Añadir Unidad</span>
+                        </button>
+                    </div>
+
+                    <!-- Representación Gráfica 3x3 -->
+                    <div class="h-64 flex items-center justify-center bg-pastel-bg rounded-2xl relative border overflow-hidden">
+                        <div class="absolute inset-0 grid grid-cols-3 grid-rows-3" id="mckinsey-grid-zones">
+                            <!-- Celdas de McKinsey -->
+                            <div class="bg-emerald-50 border-r border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-emerald-800">Invertir 🟩</div>
+                            <div class="bg-emerald-50 border-r border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-emerald-800">Invertir 🟩</div>
+                            <div class="bg-yellow-50 border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-yellow-800">Mantener 🟨</div>
+
+                            <div class="bg-emerald-50 border-r border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-emerald-800">Invertir 🟩</div>
+                            <div class="bg-yellow-50 border-r border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-yellow-800">Mantener 🟨</div>
+                            <div class="bg-red-50 border-b border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-red-800">Cosechar 🟥</div>
+
+                            <div class="bg-yellow-50 border-r border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-yellow-800">Mantener 🟨</div>
+                            <div class="bg-red-50 border-r border-pastel-rosa flex items-center justify-center text-[8px] font-bold text-red-800">Cosechar 🟥</div>
+                            <div class="bg-red-50 flex items-center justify-center text-[8px] font-bold text-red-800">Cosechar 🟥</div>
+                        </div>
+                        <svg class="w-full h-full absolute" viewBox="0 0 300 300" id="mckinsey-svg">
+                            <!-- Unidades de negocio en plano -->
+                        </svg>
+                    </div>
+
+                    <div id="mckinsey-units-controls" class="space-y-3 max-h-[200px] overflow-y-auto pr-2">
+                        <!-- Dinámico -->
+                    </div>
+                </div>
+
+                <!-- MATRIZ DE LA GRAN ESTRATEGIA (2X2) -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Matriz de la Gran Estrategia</h3>
+                        <p class="text-xs text-pastel-accent">Mide el Crecimiento del Mercado y la Posición Competitiva de VoltEcuador</p>
+                    </div>
+
+                    <!-- Controles Gran Estrategia -->
+                    <div class="grid grid-cols-2 gap-4 bg-pastel-bg p-4 rounded-2xl border border-pastel-rosa/50 text-xs">
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Crecimiento Mercado (Rápido vs. Lento)</label>
+                            <input type="range" id="gran-crecimiento" min="-10" max="10" value="5" class="w-full accent-pastel-cafe" oninput="drawGranEstrategia()">
+                        </div>
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Posición Competitiva (Fuerte vs. Débil)</label>
+                            <input type="range" id="gran-posicion" min="-10" max="10" value="6" class="w-full accent-pastel-cafe" oninput="drawGranEstrategia()">
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Gran Estrategia -->
+                    <div class="h-64 flex items-center justify-center bg-pastel-bg rounded-2xl relative border overflow-hidden">
+                        <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
+                            <div class="border-r border-b border-dashed flex items-start justify-start p-2 text-[8px] font-bold text-pastel-cafe/40 bg-purple-50/10">CUADRANTE II</div>
+                            <div class="border-b border-dashed flex items-start justify-end p-2 text-[8px] font-bold text-pastel-cafe/40 bg-indigo-50/10">CUADRANTE I (Ideal)</div>
+                            <div class="border-r border-dashed flex items-end justify-start p-2 text-[8px] font-bold text-pastel-cafe/40 bg-red-50/10">CUADRANTE III</div>
+                            <div class="flex items-end justify-end p-2 text-[8px] font-bold text-pastel-cafe/40 bg-yellow-50/10">CUADRANTE IV</div>
+                        </div>
+                        <svg class="w-full h-full absolute" viewBox="0 0 200 200" id="gran-svg">
+                            <!-- Vector o Punto de la organización -->
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 8: OBJETIVOS SMART (INTERACTIVO) -->
+        <!-- ============================================ -->
+        <div id="view-smart" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- FORMULARIO DE CREACIÓN/EDICIÓN DE OBJETIVO SMART -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Configurar Meta SMART</h3>
+                        <p class="text-xs text-pastel-accent">Formula objetivos específicos y asócialos a un KPI dinámico</p>
+                    </div>
+
+                    <div class="space-y-3 text-xs">
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Descripción del Objetivo SMART</label>
+                            <textarea id="smart-input-text" class="w-full p-2 border rounded-xl bg-pastel-bg outline-none" rows="3" placeholder="Ejem: Incrementar la venta de motos Yadea en un 20%..."></textarea>
+                        </div>
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Asociar con un KPI de tu catálogo</label>
+                            <select id="smart-input-kpi" class="w-full p-2 border rounded-xl bg-pastel-bg outline-none font-semibold text-pastel-cafe">
+                                <!-- Se llena dinámicamente desde la lista global de KPIs -->
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="font-bold text-pastel-cafe block mb-1">Valor Meta (Target)</label>
+                                <input type="number" id="smart-input-target" class="w-full p-2 border rounded-xl bg-pastel-bg outline-none" value="850">
+                            </div>
+                            <div>
+                                <label class="font-bold text-pastel-cafe block mb-1">Unidad de Medida</label>
+                                <input type="text" id="smart-input-unit" class="w-full p-2 border rounded-xl bg-pastel-bg outline-none" value="$k" readonly>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-pastel-bg rounded-xl border border-pastel-rosa/50 text-[10px] text-pastel-accent">
+                            ℹ️ La unidad de medida y sentido de optimización (inversa) se heredan directamente de la definición de tu KPI seleccionado.
+                        </div>
+                        <button onclick="saveSmartObjective()" class="w-full bg-pastel-cafe text-white p-2.5 rounded-xl font-bold hover:bg-pastel-accent transition-all flex items-center justify-center space-x-1.5">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Guardar Objetivo SMART</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LISTADO COMPLETO Y BAROMETRO DE CUMPLIMIENTO -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-pastel-cafe">Estatus de Metas Corporativas</h3>
+                            <p class="text-xs text-pastel-accent">El progreso de cada objetivo se calcula dinámicamente de acuerdo con los KPIs vigentes</p>
+                        </div>
+                        <span class="px-3 py-1 bg-pastel-rosa text-pastel-cafe rounded-full text-xs font-bold">Rendimiento Real</span>
+                    </div>
+
+                    <div id="smart-objectives-list" class="space-y-6 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- Se renderizará vía JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 9: MCPE (MATRIZ CUANTITATIVA) -->
+        <!-- ============================================ -->
+        <div id="view-cuantitativa" class="tab-content hidden space-y-8">
+            <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">Matriz Cuantitativa de Planificación Estratégica (MCPE)</h3>
+                        <p class="text-xs text-pastel-accent">Los factores clave se sincronizan y heredan automáticamente de las matrices EFE y EFI</p>
+                    </div>
+                    <span class="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-bold flex items-center space-x-1.5 self-start shadow-xs" id="mcpe-winner-badge">
+                        Evaluando Ganadora...
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-pastel-rosa">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-pastel-bg text-pastel-cafe border-b border-pastel-rosa">
+                                <th class="p-3 font-bold">Factores Clave Sincronizados</th>
+                                <th class="p-3 font-semibold text-center w-20">Peso</th>
+                                <th class="p-3 text-center bg-emerald-50/50 font-bold w-40">E1: Alianza Flotas Públicas</th>
+                                <th class="p-3 text-center bg-blue-50/50 font-bold w-40">E2: Suscripciones y Renting</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-pastel-rosa" id="mcpe-table-body">
+                            <!-- Inyectado dinámicamente desde EFI/EFE -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- SECCIÓN 10: GESTIÓN DE KPIS & SIMULACIÓN DINÁMICA -->
+        <!-- ============================================ -->
+        <div id="view-kpis" class="tab-content hidden space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- PANEL 1: REGISTRO Y ADMINISTRACIÓN DE NUEVOS KPIS -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">1. Catálogo de KPIs</h3>
+                        <p class="text-xs text-pastel-accent">Crea tus propios indicadores para vincularlos a los objetivos</p>
+                    </div>
+
+                    <div class="space-y-3 text-xs bg-pastel-bg/50 p-4 rounded-2xl border border-pastel-rosa/30">
+                        <div>
+                            <label class="font-bold text-pastel-cafe block mb-1">Nombre del KPI</label>
+                            <input type="text" id="new-kpi-name" class="w-full p-2 border rounded-xl bg-white outline-none" placeholder="Ejem: Ahorro de combustible">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="font-bold text-pastel-cafe block mb-1">Unidad</label>
+                                <input type="text" id="new-kpi-unit" class="w-full p-2 border rounded-xl bg-white outline-none" placeholder="Ejem: Litros, $, Ton">
+                            </div>
+                            <div>
+                                <label class="font-bold text-pastel-cafe block mb-1">Tipo de Meta</label>
+                                <select id="new-kpi-inverse" class="w-full p-2 border rounded-xl bg-white outline-none font-semibold text-pastel-cafe">
+                                    <option value="false">Mayor es mejor (Directo)</option>
+                                    <option value="true">Menor es mejor (Inverso)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="addNewCustomKpi()" class="w-full bg-pastel-cafe text-white p-2.5 rounded-xl font-bold hover:bg-pastel-accent transition-all flex items-center justify-center space-x-1.5">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Agregar al Catálogo</span>
+                        </button>
+                    </div>
+
+                    <!-- Lista de KPIs del Catálogo -->
+                    <div class="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                        <span class="text-xs font-bold text-pastel-cafe block border-b pb-1">Tus KPIs Activos</span>
+                        <div id="kpis-catalog-list" class="space-y-2">
+                            <!-- Inyectado vía JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: SELECCIÓN Y CARGA DE VALORES MENSUALES -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm space-y-4">
+                    <div class="space-y-1">
+                        <h3 class="text-lg font-bold text-pastel-cafe">2. Valores Mensuales</h3>
+                        <p class="text-xs text-pastel-accent">Elige el KPI de tu catálogo para configurar su comportamiento</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-bold text-pastel-cafe block mb-1">KPI seleccionado a editar:</label>
+                            <select id="active-kpi-selector" onchange="onActiveKpiChange()" class="w-full p-2.5 border rounded-xl bg-pastel-bg font-bold text-pastel-cafe outline-none">
+                                <!-- Llenado dinámicamente -->
+                            </select>
+                        </div>
+
+                        <div class="space-y-3 max-h-[300px] overflow-y-auto pr-1" id="kpi-monthly-inputs-container">
+                            <!-- Inyectado vía JS para el KPI seleccionado -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 3: DIAGRAMA VISUAL DE KPIS -->
+                <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-pastel-cafe">3. Consolidado General</h3>
+                        <p class="text-xs text-pastel-accent mb-4">Métricas consolidadas actuales de VoltEcuador</p>
+                        
+                        <div class="space-y-3" id="dash-panel-kpis-values">
+                            <!-- Inyectado dinámicamente para todos los KPIs -->
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-pastel-bg rounded-2xl border border-pastel-rosa text-xs text-pastel-accent mt-6">
+                        💡 <strong>Sugerencia de Simulación:</strong> Cambia la palanca de meta en el Dashboard Principal para ver cómo escala el progreso de los KPIs de manera agregada e impacta tus metas.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- PIE DE PÁGINA -->
+    <footer class="bg-white border-t border-pastel-rosa py-6 text-center text-xs text-pastel-accent mt-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>© 2026 VoltEcuador. Plataforma de Planificación Estratégica Modular Interactiva con Cuadrantes Cartesianos.</p>
+        </div>
+    </footer>
+
+    <!-- LOGICA SCRIPT COMPLETA DEL DASHBOARD -->
+    <script>
+        // --- ESTADO GLOBAL DE DATOS ---
+        
+        let pestelData = [
+            { id: 1, type: 'P', text: 'Ley de Eficiencia Energética: 10% flotas públicas eléctricas para 2025', impacto: 'Oportunidad' },
+            { id: 2, type: 'E', text: 'Desaceleración del PIB (proyección 2.3%) e incremento de tasas de interés', impacto: 'Amenaza' },
+            { id: 3, type: 'S', text: 'Insatisfacción ciudadana con el transporte público urbano', impacto: 'Oportunidad' },
+            { id: 4, type: 'T', text: 'Despliegue de red 5G para telemetría vehicular', impacto: 'Oportunidad' },
+            { id: 5, type: 'Ec', text: 'Acuerdo de Escazú regula el reciclaje ecológico de baterías de litio', impacto: 'Oportunidad' },
+            { id: 6, type: 'L', text: 'Normativa INEN 2850 exige un estándar técnico específico de carga', impacto: 'Amenaza' }
+        ];
+
+        let porterForces = [
+            { id: 1, name: 'Negociación de Clientes', value: 80, desc: 'Alta por sensibilidad extrema a precios' },
+            { id: 2, name: 'Negociación de Proveedores', value: 90, desc: 'Muy alta por dominio oligárquico de baterías asiáticas' },
+            { id: 3, name: 'Amenaza de Sustitutos', value: 85, desc: 'Dominio de vehículos tradicionales a combustión' },
+            { id: 4, name: 'Nuevos Competidores', value: 35, desc: 'Baja barrera inicial para marcas Chinas' },
+            { id: 5, name: 'Rivalidad de la Industria', value: 65, desc: 'Media-alta con guerra de precios' }
+        ];
+
+        let valueChainData = [
+            { id: 1, category: 'Infraestructura', name: 'Infraestructura de la Empresa', desc: 'Gestión corporativa, planificación financiera adaptada a la dolarización y búsqueda de incentivos verdes.' },
+            { id: 2, category: 'Recursos Humanos', name: 'Gestión de Recursos Humanos', desc: 'Capacitación en seguridad industrial de alto voltaje y certificación técnica en manejo de litio.' },
+            { id: 3, category: 'Tecnología', name: 'Desarrollo de Tecnología', desc: 'Desarrollo de software de telemetría, mapeo inteligente de red de electrolineras e integración IoT.' },
+            { id: 4, category: 'Abastecimiento', name: 'Abastecimiento / Compras', desc: 'Negociación y compra de kits de ensamblaje (CKD) con socios estratégicos asiáticos (BYD/Yadea).' },
+            { id: 5, category: 'Actividades Primarias', name: 'Logística de Entrada', desc: 'Recepción, desaduanización rápida y almacenamiento controlado de celdas de baterías de litio.' },
+            { id: 6, category: 'Actividades Primarias', name: 'Operaciones', desc: 'Ensamblaje local de motos y autos garantizando la norma de origen del 25% nacional.' },
+            { id: 7, category: 'Actividades Primarias', name: 'Logística de Salida', desc: 'Distribución nacional y transporte seguro de los vehículos terminados a la red de showrooms.' },
+            { id: 8, category: 'Actividades Primarias', name: 'Marketing y Ventas', desc: 'Estrategias comerciales de ahorro operativo y financiamiento blando con 60 días de gracia.' },
+            { id: 9, category: 'Actividades Primarias', name: 'Servicio Postventa', desc: 'Red de talleres autorizados con diagnóstico predictivo de baterías de litio y stock de repuestos.' }
+        ];
+
+        let efiFactors = [
+            { id: 'efi-1', type: 'Fortaleza', desc: 'Preferencia de ley y descuento arancelario prioritario', peso: 0.20, calif: 4, e1_atractivo: 4, e2_atractivo: 3 },
+            { id: 'efi-2', type: 'Fortaleza', desc: 'Reducción de costos de baterías (15% anual)', peso: 0.15, calif: 3, e1_atractivo: 2, e2_atractivo: 4 },
+            { id: 'efi-3', type: 'Debilidad', desc: 'Margen ajustado por sensibilidad de precios en mercado', peso: 0.35, calif: 2, e1_atractivo: 3, e2_atractivo: 4 },
+            { id: 'efi-4', type: 'Debilidad', desc: 'Rotación lenta de inventarios (105 días promedio)', peso: 0.30, calif: 1, e1_atractivo: 2, e2_atractivo: 4 }
+        ];
+
+        let efeFactors = [
+            { id: 'efe-1', type: 'Oportunidad', desc: 'Exigencia de flotas eléctricas públicas para 2025', peso: 0.30, calif: 4, e1_atractivo: 4, e2_atractivo: 3 },
+            { id: 'efe-2', type: 'Oportunidad', desc: 'Exención de restricción de Pico y Placa de 12 horas', peso: 0.25, calif: 3, e1_atractivo: 2, e2_atractivo: 4 },
+            { id: 'efe-3', type: 'Amenaza', desc: 'Dependencia logística de fabricantes asiáticos', peso: 0.25, calif: 2, e1_atractivo: 3, e2_atractivo: 3 },
+            { id: 'efe-4', type: 'Amenaza', desc: 'Incertidumbre regulatoria en conectores de carga', peso: 0.20, calif: 2, e1_atractivo: 2, e2_atractivo: 2 }
+        ];
+
+        let fodaStrategies = {
+            FO: [{ id: 1, text: 'Aprovechar descuentos arancelarios para masificar flotas de vehículos BYD públicos.' }],
+            DO: [{ id: 2, text: 'Promocionar exención de Pico y Placa para incentivar la compra corporativa.' }],
+            FA: [{ id: 3, text: 'Desarrollar inventario local robusto de componentes críticos de alto desgaste.' }],
+            DA: [{ id: 4, text: 'Diseñar planes de arrendamiento o suscripción mensual para reducir el impacto.' }]
+        };
+
+        // BCG Datos Dinámicos: Tasa Crecimiento de Mercado (0% - 20%), Participación Relativa (0.1x - 10x)
+        let bcgItems = [
+            { id: 1, name: 'Autos BYD', crecimiento: 15, participacion: 2.5 },
+            { id: 2, name: 'Scooters NIU', crecimiento: 12, participacion: 0.4 },
+            { id: 3, name: 'Motos Yadea', crecimiento: 4, participacion: 3.2 },
+            { id: 4, name: 'Bicicletas Premium', crecimiento: 3, participacion: 0.2 }
+        ];
+
+        // McKinsey Datos Dinámicos: Atractivo Mercado (1 - 5), Fuerza Competitiva (1 - 5)
+        let mckinseyItems = [
+            { id: 1, name: 'Vehículos Eléctricos', atractivo: 4.5, fuerza: 4.2 },
+            { id: 2, name: 'Scooters Personales', atractivo: 3.0, fuerza: 2.5 },
+            { id: 3, name: 'Flotas Corporativas', atractivo: 4.8, fuerza: 3.8 }
+        ];
+
+        // --- SISTEMA DINÁMICO DE CATÁLOGO DE KPIS ---
+        let kpis = [
+            { id: 'ventas', name: 'Ventas de Vehículos', unit: '$k', inverse: false, monthlyData: [120, 135, 150, 180, 210] },
+            { id: 'co2', name: 'Ahorro CO2 Estimado', unit: 'Ton', inverse: false, monthlyData: [70, 80, 90, 100, 110] },
+            { id: 'rotacion', name: 'Rotación de Inventario', unit: 'Días', inverse: true, monthlyData: [95, 90, 85, 82, 80] },
+            { id: 'penetracion', name: 'Penetración de Mercado', unit: '%', inverse: false, monthlyData: [5.0, 6.1, 7.2, 8.0, 8.4] }
+        ];
+
+        let kpiMonths = ['Ene', 'Feb', 'Mar', 'Abr', 'May'];
+        let activeKpiId = 'ventas'; // KPI seleccionado para visualizar y editar
+
+        // --- SISTEMA DINÁMICO DE OBJETIVOS SMART ---
+        let smartObjectives = [
+            { id: 1, text: 'Incrementar las ventas de vehículos BYD a $850k acumulados en el semestre.', kpiLinked: 'ventas', target: 850, unit: '$k', inverse: false },
+            { id: 2, text: 'Mantener el Ahorro de CO2 de las flotas ecológicas por encima de 400 Toneladas.', kpiLinked: 'co2', target: 400, unit: 'Ton', inverse: false },
+            { id: 3, text: 'Reducir el tiempo promedio de rotación de inventarios a 75 días o menos.', kpiLinked: 'rotacion', target: 75, unit: 'Días', inverse: true }
+        ];
+
+        let activeTab = 'dashboard';
+        let chartMcpe, chartKpis, chartPorter;
+
+        // --- SISTEMA DE PESTAÑAS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-pastel-cafe', 'text-white', 'shadow-sm');
+                btn.classList.add('text-pastel-cafe', 'hover:bg-pastel-rosa/40');
+            });
+
+            const targetView = document.getElementById(`view-${tabId}`);
+            if (targetView) targetView.classList.remove('hidden');
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-pastel-cafe', 'text-white', 'shadow-sm');
+                activeBtn.classList.remove('text-pastel-cafe', 'hover:bg-pastel-rosa/40');
+            }
+
+            activeTab = tabId;
+            
+            // Forzar renderizado y recalcular componentes al cambiar de pestaña
+            if (tabId === 'cuantitativa') renderMcpeTable();
+            if (tabId === 'matrices') {
+                renderBcg();
+                drawPeyea();
+            }
+            if (tabId === 'mckinsey') {
+                renderMckinsey();
+                drawGranEstrategia();
+            }
+            if (tabId === 'smart') {
+                renderSmartObjectives();
+            }
+            if (tabId === 'kpis') {
+                renderKpisCatalog();
+                renderKpiMonthlyInputs();
+            }
+            if (tabId === 'dashboard') {
+                renderDashboardWidgets();
+            }
+        }
+
+        // --- INICIALIZADOR ---
+        window.onload = function() {
+            lucide.createIcons();
+            
+            // Inicializar renderizadores
+            renderPestel();
+            renderValueChain();
+            renderEfiFactors();
+            renderEfeFactors();
+            renderFodaStrategies();
+            renderBcg();
+            drawPeyea();
+            renderMckinsey();
+            drawGranEstrategia();
+            renderKpisCatalog();
+            renderKpiMonthlyInputs();
+            renderSmartObjectives();
+            renderDashboardWidgets();
+
+            // Dibujar gráficos e iniciar Chart.js
+            initCharts();
+        };
+
+        // --- INICIAR CHART.JS ---
+        function initCharts() {
+            // Chart 1: MCPE Ganadora (Barra Horizontal)
+            const ctxMcpe = document.getElementById('chartMcpeGanadora').getContext('2d');
+            chartMcpe = new Chart(ctxMcpe, {
+                type: 'bar',
+                data: {
+                    labels: ['E1: Alianza Flotas Públicas', 'E2: Suscripciones y Renting'],
+                    datasets: [{
+                        label: 'Puntaje de Atractivo Colectivo',
+                        data: [0, 0],
+                        backgroundColor: ['rgba(200, 182, 166, 0.7)', 'rgba(141, 123, 104, 0.9)'],
+                        borderColor: ['#C8B6A6', '#8D7B68'],
+                        borderWidth: 1.5,
+                        borderRadius: 12
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, min: 0, max: 10 },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Chart 2: KPIs Mensuales (Línea)
+            const ctxKpis = document.getElementById('chartKpiEvolucion').getContext('2d');
+            const activeKpi = kpis.find(k => k.id === activeKpiId);
+            chartKpis = new Chart(ctxKpis, {
+                type: 'line',
+                data: {
+                    labels: kpiMonths,
+                    datasets: [
+                        {
+                            label: activeKpi ? activeKpi.name : 'Rendimiento',
+                            data: activeKpi ? activeKpi.monthlyData : [],
+                            borderColor: '#8D7B68',
+                            backgroundColor: 'rgba(141, 123, 104, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(141, 123, 104, 0.1)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Chart 3: Porter Radar
+            const ctxPorter = document.getElementById('chartPorterRadar').getContext('2d');
+            chartPorter = new Chart(ctxPorter, {
+                type: 'radar',
+                data: {
+                    labels: porterForces.map(f => f.name),
+                    datasets: [{
+                        label: 'Intensidad de Fuerza',
+                        data: porterForces.map(f => f.value),
+                        backgroundColor: 'rgba(231, 136, 149, 0.2)',
+                        borderColor: '#E78895',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#8D7B68'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+
+            // Forzar cálculos
+            renderPorter();
+            calculateEfi();
+            calculateEfe();
+            recalculateMcpe();
+            simulateKpiData();
+        }
+
+        // --- RENDERIZADORES DINÁMICOS ---
+
+        // PESTEL Accordion
+        function renderPestel() {
+            const container = document.getElementById('pestel-accordion');
+            container.innerHTML = '';
+            
+            const cats = [
+                { type: 'P', label: 'Político' },
+                { type: 'E', label: 'Económico' },
+                { type: 'S', label: 'Social' },
+                { type: 'T', label: 'Tecnológico' },
+                { type: 'Ec', label: 'Ecológico' },
+                { type: 'L', label: 'Legal' }
+            ];
+
+            cats.forEach(cat => {
+                const list = pestelData.filter(p => p.type === cat.type);
+                let itemsHTML = '';
+                
+                list.forEach(item => {
+                    itemsHTML += `
+                        <div class="flex items-start space-x-2 bg-white p-2 rounded-xl shadow-xs border border-pastel-rosa/30">
+                            <div class="flex-grow space-y-1 text-xs">
+                                <textarea onchange="updatePestelText(${item.id}, this.value)" class="w-full text-xs p-1 border-0 focus:ring-0 outline-none resize-none" rows="2">${item.text}</textarea>
+                                <div class="flex justify-between items-center px-1 mt-1">
+                                    <select onchange="updatePestelImpact(${item.id}, this.value)" class="text-[10px] border rounded bg-pastel-bg p-0.5 text-pastel-cafe">
+                                        <option value="Oportunidad" ${item.impacto === 'Oportunidad' ? 'selected' : ''}>Oportunidad</option>
+                                        <option value="Amenaza" ${item.impacto === 'Amenaza' ? 'selected' : ''}>Amenaza</option>
+                                    </select>
+                                    <button onclick="removePestelItem(${item.id})" class="text-pastel-coral hover:text-red-700">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML += `
+                    <div class="p-4 bg-pastel-bg rounded-2xl border border-pastel-rosa/50 space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs font-bold text-pastel-cafe bg-white px-2.5 py-1 rounded-lg">${cat.type} - ${cat.label}</span>
+                            <button onclick="addPestelItem('${cat.type}')" class="text-xs bg-pastel-cafe hover:bg-pastel-accent text-white px-2 py-1 rounded-lg font-semibold flex items-center space-x-1">
+                                <i data-lucide="plus" class="w-3 h-3"></i> <span>Añadir</span>
+                            </button>
+                        </div>
+                        <div class="space-y-2">${itemsHTML}</div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function addPestelItem(type) {
+            const nextId = pestelData.length > 0 ? Math.max(...pestelData.map(d => d.id)) + 1 : 1;
+            pestelData.push({ id: nextId, type, text: 'Nuevo factor de análisis...', impacto: 'Oportunidad' });
+            renderPestel();
+        }
+
+        function removePestelItem(id) {
+            pestelData = pestelData.filter(d => d.id !== id);
+            renderPestel();
+        }
+
+        function updatePestelText(id, val) {
+            const item = pestelData.find(d => d.id === id);
+            if (item) item.text = val;
+        }
+
+        function updatePestelImpact(id, val) {
+            const item = pestelData.find(d => d.id === id);
+            if (item) item.impacto = val;
+        }
+
+        // Porter Controls
+        function renderPorter() {
+            const container = document.getElementById('porter-forces-list');
+            container.innerHTML = '';
+            porterForces.forEach(force => {
+                container.innerHTML += `
+                    <div class="p-3 bg-pastel-bg rounded-2xl border border-pastel-rosa/50 space-y-2 text-xs">
+                        <div class="flex justify-between items-center font-semibold">
+                            <input type="text" value="${force.name}" onchange="updatePorterName(${force.id}, this.value)" class="font-bold text-xs text-pastel-cafe bg-transparent border-b border-transparent focus:border-pastel-cafe outline-none flex-grow mr-2">
+                            <button onclick="removePorterForce(${force.id})" class="text-pastel-coral hover:text-red-700">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="range" min="0" max="100" value="${force.value}" oninput="updatePorterValue(${force.id}, this.value)" class="flex-grow accent-pastel-cafe">
+                            <span class="text-xs font-bold text-pastel-cafe w-8 text-right">${force.value}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+            updatePorterChart();
+        }
+
+        function addPorterForce() {
+            const nextId = porterForces.length > 0 ? Math.max(...porterForces.map(p => p.id)) + 1 : 1;
+            porterForces.push({ id: nextId, name: 'Nueva Fuerza de Mercado', value: 50, desc: 'Análisis...' });
+            renderPorter();
+        }
+
+        function removePorterForce(id) {
+            porterForces = porterForces.filter(f => f.id !== id);
+            renderPorter();
+        }
+
+        function updatePorterName(id, val) {
+            const force = porterForces.find(f => f.id === id);
+            if (force) {
+                force.name = val;
+                updatePorterChart();
+            }
+        }
+
+        function updatePorterValue(id, val) {
+            const force = porterForces.find(f => f.id === id);
+            if (force) {
+                force.value = parseInt(val) || 0;
+                updatePorterChart();
+                renderPorter(); 
+            }
+        }
+
+        function updatePorterChart() {
+            if (chartPorter) {
+                chartPorter.data.labels = porterForces.map(f => f.name);
+                chartPorter.data.datasets[0].data = porterForces.map(f => f.value);
+                chartPorter.update();
+            }
+        }
+
+        // Cadena de Valor
+        function renderValueChain() {
+            const container = document.getElementById('value-chain-container');
+            if (!container) return;
+            container.innerHTML = '';
+            valueChainData.forEach(item => {
+                container.innerHTML += `
+                    <div class="bg-pastel-bg p-4 rounded-2xl border border-pastel-rosa/50 space-y-2 relative group text-xs flex flex-col justify-between">
+                        <button onclick="removeValueChainItem(${item.id})" class="absolute top-2 right-2 text-pastel-coral opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center border-b pb-1 mb-1">
+                                <select onchange="updateValueChainCat(${item.id}, this.value)" class="text-[9px] font-bold uppercase tracking-wider text-pastel-cafe bg-white px-2 py-0.5 rounded border border-pastel-rosa outline-none">
+                                    <option value="Infraestructura" ${item.category === 'Infraestructura' ? 'selected' : ''}>Infraestructura</option>
+                                    <option value="Recursos Humanos" ${item.category === 'Recursos Humanos' ? 'selected' : ''}>Recursos Humanos</option>
+                                    <option value="Tecnología" ${item.category === 'Tecnología' ? 'selected' : ''}>Tecnología</option>
+                                    <option value="Abastecimiento" ${item.category === 'Abastecimiento' ? 'selected' : ''}>Abastecimiento</option>
+                                    <option value="Actividades Primarias" ${item.category === 'Actividades Primarias' ? 'selected' : ''}>Actividades Primarias</option>
+                                </select>
+                                <span class="text-[9px] text-pastel-accent font-bold">VoltEcuador VC</span>
+                            </div>
+                            <input type="text" value="${item.name}" onchange="updateValueChainName(${item.id}, this.value)" class="w-full font-bold text-xs text-pastel-cafe bg-transparent border-b border-transparent focus:border-pastel-cafe outline-none">
+                            <textarea onchange="updateValueChainDesc(${item.id}, this.value)" class="w-full text-xs text-pastel-accent bg-transparent border-0 focus:ring-0 outline-none resize-none" rows="3">${item.desc}</textarea>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function addValueChainItem() {
+            const nextId = valueChainData.length > 0 ? Math.max(...valueChainData.map(v => v.id)) + 1 : 1;
+            valueChainData.push({ id: nextId, category: 'Actividades Primarias', name: 'Nueva Actividad Estratégica', desc: 'Describe aquí el impacto operativo o tecnológico.' });
+            renderValueChain();
+        }
+
+        function removeValueChainItem(id) {
+            valueChainData = valueChainData.filter(v => v.id !== id);
+            renderValueChain();
+        }
+
+        function updateValueChainCat(id, val) {
+            const item = valueChainData.find(v => v.id === id);
+            if (item) item.category = val;
+        }
+
+        function updateValueChainName(id, val) {
+            const item = valueChainData.find(v => v.id === id);
+            if (item) item.name = val;
+        }
+
+        function updateValueChainDesc(id, val) {
+            const item = valueChainData.find(v => v.id === id);
+            if (item) item.desc = val;
+        }
+
+        // EFI / EFE Render
+        function renderEfiFactors() {
+            const container = document.getElementById('efi-factors-container');
+            if (!container) return;
+            container.innerHTML = '';
+            efiFactors.forEach(factor => {
+                container.innerHTML += `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-pastel-bg rounded-xl gap-2 text-xs relative border border-pastel-rosa/20">
+                        <div class="flex items-center space-x-2 flex-grow sm:max-w-xs">
+                            <select onchange="updateEfiType('${factor.id}', this.value)" class="p-1 border rounded bg-white font-bold text-[10px] text-pastel-cafe">
+                                <option value="Fortaleza" ${factor.type === 'Fortaleza' ? 'selected' : ''}>Fortaleza</option>
+                                <option value="Debilidad" ${factor.type === 'Debilidad' ? 'selected' : ''}>Debilidad</option>
+                            </select>
+                            <input type="text" value="${factor.desc}" onchange="updateEfiDesc('${factor.id}', this.value)" class="w-full bg-transparent border-b border-transparent focus:border-pastel-cafe outline-none">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex items-center">
+                                <label class="mr-1 text-[10px] text-pastel-accent font-semibold">Peso:</label>
+                                <input type="number" step="0.01" value="${factor.peso}" onchange="updateEfiWeight('${factor.id}', this.value)" class="w-12 border p-1 rounded bg-white text-center">
+                            </div>
+                            <div class="flex items-center">
+                                <label class="mr-1 text-[10px] text-pastel-accent font-semibold">Calif:</label>
+                                <select onchange="updateEfiCalif('${factor.id}', this.value)" class="border p-1 rounded bg-white font-bold text-pastel-cafe">
+                                    <option value="1" ${factor.calif === 1 ? 'selected' : ''}>1</option>
+                                    <option value="2" ${factor.calif === 2 ? 'selected' : ''}>2</option>
+                                    <option value="3" ${factor.calif === 3 ? 'selected' : ''}>3</option>
+                                    <option value="4" ${factor.calif === 4 ? 'selected' : ''}>4</option>
+                                </select>
+                            </div>
+                            <button onclick="removeEfiFactor('${factor.id}')" class="text-pastel-coral hover:text-red-700 ml-1">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+            calculateEfi();
+        }
+
+        function addEfiFactor() {
+            const nextId = `efi-${Date.now()}`;
+            efiFactors.push({ id: nextId, type: 'Fortaleza', desc: 'Nueva Fortaleza o Debilidad...', peso: 0.10, calif: 3, e1_atractivo: 2, e2_atractivo: 2 });
+            renderEfiFactors();
+        }
+
+        // Solución a eliminación de factores
+        function removeEfiFactor(id) {
+            efiFactors = efiFactors.filter(f => f.id !== id);
+            renderEfiFactors();
+        }
+
+        function updateEfiType(id, val) {
+            const f = efiFactors.find(x => x.id === id);
+            if (f) f.type = val;
+        }
+
+        function updateEfiDesc(id, val) {
+            const f = efiFactors.find(x => x.id === id);
+            if (f) f.desc = val;
+        }
+
+        function updateEfiWeight(id, val) {
+            const f = efiFactors.find(x => x.id === id);
+            if (f) {
+                f.peso = parseFloat(val) || 0;
+                calculateEfi();
+            }
+        }
+
+        // Sincronizar calificación con MCPE
+        function updateEfiCalif(id, val) {
+            const f = efiFactors.find(x => x.id === id);
+            if (f) {
+                f.calif = parseInt(val) || 1;
+                calculateEfi();
+            }
+        }
+
+        function calculateEfi() {
+            let total = 0;
+            let sumWeights = 0;
+            efiFactors.forEach(f => {
+                sumWeights += f.peso;
+                total += f.peso * f.calif;
+            });
+            const badgeTotal = document.getElementById('efi-total-badge');
+            const badgeSum = document.getElementById('efi-sum-badge');
+            const dashEfi = document.getElementById('dash-efi');
+            if (badgeTotal) badgeTotal.innerText = `EFI: ${total.toFixed(2)}`;
+            if (badgeSum) badgeSum.innerText = `Suma: ${sumWeights.toFixed(2)}`;
+            if (dashEfi) dashEfi.innerText = total.toFixed(2);
+            recalculateMcpe();
+        }
+
+        function renderEfeFactors() {
+            const container = document.getElementById('efe-factors-container');
+            if (!container) return;
+            container.innerHTML = '';
+            efeFactors.forEach(factor => {
+                container.innerHTML += `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-pastel-bg rounded-xl gap-2 text-xs relative border border-pastel-rosa/20">
+                        <div class="flex items-center space-x-2 flex-grow sm:max-w-xs">
+                            <select onchange="updateEfeType('${factor.id}', this.value)" class="p-1 border rounded bg-white font-bold text-[10px] text-pastel-cafe">
+                                <option value="Oportunidad" ${factor.type === 'Oportunidad' ? 'selected' : ''}>Oportunidad</option>
+                                <option value="Amenaza" ${factor.type === 'Amenaza' ? 'selected' : ''}>Amenaza</option>
+                            </select>
+                            <input type="text" value="${factor.desc}" onchange="updateEfeDesc('${factor.id}', this.value)" class="w-full bg-transparent border-b border-transparent focus:border-pastel-cafe outline-none">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="flex items-center">
+                                <label class="mr-1 text-[10px] text-pastel-accent font-semibold">Peso:</label>
+                                <input type="number" step="0.01" value="${factor.peso}" onchange="updateEfeWeight('${factor.id}', this.value)" class="w-12 border p-1 rounded bg-white text-center">
+                            </div>
+                            <div class="flex items-center">
+                                <label class="mr-1 text-[10px] text-pastel-accent font-semibold">Calif:</label>
+                                <select onchange="updateEfeCalif('${factor.id}', this.value)" class="border p-1 rounded bg-white font-bold text-pastel-cafe">
+                                    <option value="1" ${factor.calif === 1 ? 'selected' : ''}>1</option>
+                                    <option value="2" ${factor.calif === 2 ? 'selected' : ''}>2</option>
+                                    <option value="3" ${factor.calif === 3 ? 'selected' : ''}>3</option>
+                                    <option value="4" ${factor.calif === 4 ? 'selected' : ''}>4</option>
+                                </select>
+                            </div>
+                            <button onclick="removeEfeFactor('${factor.id}')" class="text-pastel-coral hover:text-red-700 ml-1">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+            calculateEfe();
+        }
+
+        function addEfeFactor() {
+            const nextId = `efe-${Date.now()}`;
+            efeFactors.push({ id: nextId, type: 'Oportunidad', desc: 'Nueva Oportunidad o Amenaza...', peso: 0.10, calif: 3, e1_atractivo: 2, e2_atractivo: 2 });
+            renderEfeFactors();
+        }
+
+        function removeEfeFactor(id) {
+            efeFactors = efeFactors.filter(f => f.id !== id);
+            renderEfeFactors();
+        }
+
+        function updateEfeType(id, val) {
+            const f = efeFactors.find(x => x.id === id);
+            if (f) f.type = val;
+        }
+
+        function updateEfeDesc(id, val) {
+            const f = efeFactors.find(x => x.id === id);
+            if (f) f.desc = val;
+        }
+
+        function updateEfeWeight(id, val) {
+            const f = efeFactors.find(x => x.id === id);
+            if (f) {
+                f.peso = parseFloat(val) || 0;
+                calculateEfe();
+            }
+        }
+
+        function updateEfeCalif(id, val) {
+            const f = efeFactors.find(x => x.id === id);
+            if (f) {
+                f.calif = parseInt(val) || 1;
+                calculateEfe();
+            }
+        }
+
+        function calculateEfe() {
+            let total = 0;
+            let sumWeights = 0;
+            efeFactors.forEach(f => {
+                sumWeights += f.peso;
+                total += f.peso * f.calif;
+            });
+            const badgeTotal = document.getElementById('efe-total-badge');
+            const badgeSum = document.getElementById('efe-sum-badge');
+            const dashEfe = document.getElementById('dash-efe');
+            if (badgeTotal) badgeTotal.innerText = `EFE: ${total.toFixed(2)}`;
+            if (badgeSum) badgeSum.innerText = `Suma Pesos: ${sumWeights.toFixed(2)}`;
+            if (dashEfe) dashEfe.innerText = total.toFixed(2);
+            recalculateMcpe();
+        }
+
+        // FODA Cruzado
+        function renderFodaStrategies() {
+            const types = ['FO', 'DO', 'FA', 'DA'];
+            types.forEach(type => {
+                const list = document.getElementById(`foda-list-${type}`);
+                if (!list) return;
+                list.innerHTML = '';
+                fodaStrategies[type].forEach(strat => {
+                    list.innerHTML += `
+                        <div class="flex items-start space-x-2 bg-white p-2 rounded-xl shadow-xs border border-pastel-rosa/30">
+                            <textarea onchange="updateFodaStrategyText('${type}', ${strat.id}, this.value)" class="w-full text-xs p-1 bg-transparent border-0 outline-none focus:ring-0 resize-none" rows="2">${strat.text}</textarea>
+                            <button onclick="removeFodaStrategy('${type}', ${strat.id})" class="text-pastel-coral hover:text-red-700 mt-1">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+            lucide.createIcons();
+        }
+
+        function addFodaStrategy(type) {
+            const nextId = fodaStrategies[type].length > 0 ? Math.max(...fodaStrategies[type].map(s => s.id)) + 1 : 1;
+            fodaStrategies[type].push({ id: nextId, text: 'Acción de VoltEcuador...' });
+            renderFodaStrategies();
+        }
+
+        function removeFodaStrategy(type, id) {
+            fodaStrategies[type] = fodaStrategies[type].filter(s => s.id !== id);
+            renderFodaStrategies();
+        }
+
+        function updateFodaStrategyText(type, id, val) {
+            const s = fodaStrategies[type].find(x => x.id === id);
+            if (s) s.text = val;
+        }
+
+
+        // --- GRAFICADOR MATRIZ BCG EN PLANO REAL ---
+        function renderBcg() {
+            const controlsContainer = document.getElementById('bcg-products-controls');
+            if (!controlsContainer) return;
+            controlsContainer.innerHTML = '';
+
+            const svg = document.getElementById('bcg-svg');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            // Dibujar cuadrantes y ejes cartesianos
+            svg.innerHTML += `
+                <line x1="100" y1="0" x2="100" y2="200" stroke="#8D7B68" stroke-width="1.5" />
+                <line x1="0" y1="100" x2="200" y2="100" stroke="#8D7B68" stroke-width="1.5" />
+            `;
+
+            bcgItems.forEach(item => {
+                // Crecimiento: 0% a 20% -> Y-coord (alto arriba, bajo abajo)
+                const yCoord = 200 - (item.crecimiento * 10);
+
+                // Participación: 0.1x a 5x -> X-coord
+                let xCoord = 200 - (item.participacion * 40);
+                xCoord = Math.max(15, Math.min(185, xCoord));
+
+                svg.innerHTML += `
+                    <g class="cursor-pointer">
+                        <circle cx="${xCoord}" cy="${yCoord}" r="8" fill="#E78895" stroke="#8D7B68" stroke-width="1.5" />
+                        <text x="${xCoord + 10}" y="${yCoord + 3}" font-size="7" font-weight="bold" fill="#8D7B68">${item.name}</text>
+                    </g>
+                `;
+
+                // Control dinámico
+                controlsContainer.innerHTML += `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2.5 bg-pastel-bg rounded-xl gap-2 text-xs border border-pastel-rosa/30">
+                        <input type="text" value="${item.name}" onchange="updateBcgName(${item.id}, this.value)" class="font-bold bg-transparent outline-none w-24">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center">
+                                <label class="text-[10px] text-pastel-accent font-semibold mr-1">Crecimiento (Y):</label>
+                                <input type="number" min="0" max="20" value="${item.crecimiento}" oninput="updateBcgCrecimiento(${item.id}, this.value)" class="w-12 border rounded bg-white p-1 text-center font-semibold">
+                                <span class="text-[10px] ml-0.5">%</span>
+                            </div>
+                            <div class="flex items-center">
+                                <label class="text-[10px] text-pastel-accent font-semibold mr-1">Partic. (X):</label>
+                                <input type="number" min="0.1" max="5" step="0.1" value="${item.participacion}" oninput="updateBcgParticipacion(${item.id}, this.value)" class="w-12 border rounded bg-white p-1 text-center font-semibold">
+                                <span class="text-[10px] ml-0.5">x</span>
+                            </div>
+                            <button onclick="removeBcgItem(${item.id})" class="text-pastel-coral hover:text-red-700">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+            calculateBcgLeader();
+        }
+
+        function addBcgItem() {
+            const nextId = bcgItems.length > 0 ? Math.max(...bcgItems.map(b => b.id)) + 1 : 1;
+            bcgItems.push({ id: nextId, name: 'Nuevo Producto', crecimiento: 10, participacion: 1.0 });
+            renderBcg();
+        }
+
+        function removeBcgItem(id) {
+            bcgItems = bcgItems.filter(b => b.id !== id);
+            renderBcg();
+        }
+
+        function updateBcgName(id, val) {
+            const item = bcgItems.find(x => x.id === id);
+            if (item) {
+                item.name = val;
+                renderBcg();
+            }
+        }
+
+        function updateBcgCrecimiento(id, val) {
+            const item = bcgItems.find(x => x.id === id);
+            if (item) {
+                item.crecimiento = parseFloat(val) || 0;
+                renderBcg();
+            }
+        }
+
+        function updateBcgParticipacion(id, val) {
+            const item = bcgItems.find(x => x.id === id);
+            if (item) {
+                item.participacion = parseFloat(val) || 0.1;
+                renderBcg();
+            }
+        }
+
+        function calculateBcgLeader() {
+            if (bcgItems.length === 0) return;
+            const leader = bcgItems[0];
+            let quad = '';
+            if (leader.crecimiento >= 10 && leader.participacion >= 1.0) quad = 'Estrella';
+            else if (leader.crecimiento >= 10 && leader.participacion < 1.0) quad = 'Incógnita';
+            else if (leader.crecimiento < 10 && leader.participacion >= 1.0) quad = 'Vaca';
+            else quad = 'Perro';
+
+            const badge = document.getElementById('dash-bcg-status');
+            if (badge) badge.innerText = `${leader.name} (${quad})`;
+        }
+
+
+        // --- GRAFICADOR MATRIZ PEYEA VECTORIAL ---
+        function drawPeyea() {
+            const ff = parseFloat(document.getElementById('peyea-ff').value) || 0;
+            const fi = parseFloat(document.getElementById('peyea-fi').value) || 0;
+            const ee = parseFloat(document.getElementById('peyea-ee').value) || 0;
+            const vc = parseFloat(document.getElementById('peyea-vc').value) || 0;
+
+            const x = fi + vc; // Eje X
+            const y = ff + ee; // Eje Y
+
+            const peyeaSvg = document.getElementById('peyea-svg');
+            if (!peyeaSvg) return;
+            
+            const mapX = (val) => 100 + (val * 15);
+            const mapY = (val) => 100 - (val * 15);
+
+            peyeaSvg.innerHTML = `
+                <!-- Cuadrantes de fuerzas -->
+                <polygon points="100,100 ${mapX(fi)},100 ${mapX(fi)},${mapY(ff)} 100,${mapY(ff)}" fill="rgba(141, 123, 104, 0.15)" stroke="#8D7B68" stroke-width="0.5"/>
+                <polygon points="100,100 ${mapX(vc)},100 ${mapX(vc)},${mapY(ff)} 100,${mapY(ff)}" fill="rgba(231, 136, 149, 0.1)" stroke="#8D7B68" stroke-width="0.5"/>
+                <polygon points="100,100 ${mapX(vc)},100 ${mapX(vc)},${mapY(ee)} 100,${mapY(ee)}" fill="rgba(141, 123, 104, 0.05)" stroke="#8D7B68" stroke-width="0.5"/>
+                <polygon points="100,100 ${mapX(fi)},100 ${mapX(fi)},${mapY(ee)} 100,${mapY(ee)}" fill="rgba(141, 123, 104, 0.15)" stroke="#8D7B68" stroke-width="0.5"/>
+
+                <!-- Vector Resultante Principal -->
+                <line x1="100" y1="100" x2="${mapX(x)}" y2="${mapY(y)}" stroke="#E78895" stroke-width="3" />
+                <circle cx="${mapX(x)}" cy="${mapY(y)}" r="5" fill="#E78895" />
+
+                <!-- Ejes -->
+                <line x1="10" y1="100" x2="190" y2="100" stroke="#8D7B68" stroke-width="1.5" />
+                <line x1="100" y1="10" x2="100" y2="190" stroke="#8D7B68" stroke-width="1.5" />
+
+                <!-- Etiquetas de ejes -->
+                <text x="180" y="95" font-size="7" font-weight="bold" fill="#8D7B68">FI</text>
+                <text x="10" y="95" font-size="7" font-weight="bold" fill="#8D7B68">VC</text>
+                <text x="105" y="15" font-size="7" font-weight="bold" fill="#8D7B68">FF</text>
+                <text x="105" y="190" font-size="7" font-weight="bold" fill="#8D7B68">EE</text>
+            `;
+
+            let status = '';
+            if (x >= 0 && y >= 0) status = 'Agresiva';
+            else if (x < 0 && y >= 0) status = 'Conservadora';
+            else if (x < 0 && y < 0) status = 'Defensiva';
+            else status = 'Competitiva';
+
+            const peyeaBadge = document.getElementById('dash-peyea-status');
+            if (peyeaBadge) peyeaBadge.innerText = status;
+        }
+
+
+        // --- GRAFICADOR MATRIZ MCKINSEY 3X3 ---
+        function renderMckinsey() {
+            const controlsContainer = document.getElementById('mckinsey-units-controls');
+            if (!controlsContainer) return;
+            controlsContainer.innerHTML = '';
+
+            const svg = document.getElementById('mckinsey-svg');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            mckinseyItems.forEach(item => {
+                const yCoord = Math.max(15, Math.min(285, 300 - ((item.atractivo - 1) / 4) * 300));
+                const xCoord = Math.max(15, Math.min(285, 300 - ((item.fuerza - 1) / 4) * 300));
+
+                svg.innerHTML += `
+                    <g class="cursor-pointer">
+                        <circle cx="${xCoord}" cy="${yCoord}" r="10" fill="#8D7B68" stroke="#FFFFFF" stroke-width="2" />
+                        <text x="${xCoord + 12}" y="${yCoord + 3}" font-size="9" font-weight="bold" fill="#8D7B68">${item.name}</text>
+                    </g>
+                `;
+
+                controlsContainer.innerHTML += `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2.5 bg-pastel-bg rounded-xl gap-2 text-xs border border-pastel-rosa/30">
+                        <input type="text" value="${item.name}" onchange="updateMckinseyName(${item.id}, this.value)" class="font-bold bg-transparent outline-none w-24">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center">
+                                <label class="text-[10px] text-pastel-accent font-semibold mr-1">Atractivo (Y):</label>
+                                <input type="number" min="1" max="5" step="0.1" value="${item.atractivo}" oninput="updateMckinseyAtractivo(${item.id}, this.value)" class="w-12 border rounded bg-white p-1 text-center font-semibold">
+                            </div>
+                            <div class="flex items-center">
+                                <label class="text-[10px] text-pastel-accent font-semibold mr-1">Fuerza (X):</label>
+                                <input type="number" min="1" max="5" step="0.1" value="${item.fuerza}" oninput="updateMckinseyFuerza(${item.id}, this.value)" class="w-12 border rounded bg-white p-1 text-center font-semibold">
+                            </div>
+                            <button onclick="removeMckinseyItem(${item.id})" class="text-pastel-coral hover:text-red-700">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+            calculateMckinseyStatus();
+        }
+
+        function addMckinseyItem() {
+            const nextId = mckinseyItems.length > 0 ? Math.max(...mckinseyItems.map(m => m.id)) + 1 : 1;
+            mckinseyItems.push({ id: nextId, name: 'Nueva Unidad', atractivo: 3.5, fuerza: 3.5 });
+            renderMckinsey();
+        }
+
+        function removeMckinseyItem(id) {
+            mckinseyItems = mckinseyItems.filter(m => m.id !== id);
+            renderMckinsey();
+        }
+
+        function updateMckinseyName(id, val) {
+            const item = mckinseyItems.find(x => x.id === id);
+            if (item) {
+                item.name = val;
+                renderMckinsey();
+            }
+        }
+
+        function updateMckinseyAtractivo(id, val) {
+            const item = mckinseyItems.find(x => x.id === id);
+            if (item) {
+                item.atractivo = parseFloat(val) || 1.0;
+                renderMckinsey();
+            }
+        }
+
+        function updateMckinseyFuerza(id, val) {
+            const item = mckinseyItems.find(x => x.id === id);
+            if (item) {
+                item.fuerza = parseFloat(val) || 1.0;
+                renderMckinsey();
+            }
+        }
+
+        function calculateMckinseyStatus() {
+            if (mckinseyItems.length === 0) return;
+            const avg = mckinseyItems.reduce((acc, curr) => ({ atractivo: acc.atractivo + curr.atractivo, fuerza: acc.fuerza + curr.fuerza }), { atractivo: 0, fuerza: 0 });
+            avg.atractivo /= mckinseyItems.length;
+            avg.fuerza /= mckinseyItems.length;
+
+            let status = '';
+            if (avg.atractivo >= 3.67 && avg.fuerza >= 3.67) status = 'Invertir / Crecer';
+            else if (avg.atractivo < 2.33 && avg.fuerza < 2.33) status = 'Cosechar / Desinvertir';
+            else status = 'Mantener / Selectivo';
+
+            const mckBadge = document.getElementById('dash-mckinsey-status');
+            if (mckBadge) mckBadge.innerText = status;
+        }
+
+
+        // --- GRAFICADOR MATRIZ DE LA GRAN ESTRATEGIA ---
+        function drawGranEstrategia() {
+            const crecimiento = parseFloat(document.getElementById('gran-crecimiento').value) || 0;
+            const posicion = parseFloat(document.getElementById('gran-posicion').value) || 0;
+
+            const svg = document.getElementById('gran-svg');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            svg.innerHTML += `
+                <line x1="100" y1="0" x2="100" y2="200" stroke="#8D7B68" stroke-width="1.5" />
+                <line x1="0" y1="100" x2="200" y2="100" stroke="#8D7B68" stroke-width="1.5" />
+            `;
+
+            const mapX = (val) => 100 + (val * 9);
+            const mapY = (val) => 100 - (val * 9);
+
+            svg.innerHTML += `
+                <circle cx="${mapX(posicion)}" cy="${mapY(crecimiento)}" r="6" fill="#8D7B68" stroke="#E78895" stroke-width="2" />
+                <line x1="100" y1="100" x2="${mapX(posicion)}" y2="${mapY(crecimiento)}" stroke="#E78895" stroke-width="1.5" stroke-dasharray="3,3" />
+            `;
+
+            let quad = '';
+            if (posicion >= 0 && crecimiento >= 0) quad = 'Cuadrante I (Fuerte)';
+            else if (posicion < 0 && crecimiento >= 0) quad = 'Cuadrante II (Reorientación)';
+            else if (posicion < 0 && crecimiento < 0) quad = 'Cuadrante III (Defensivo)';
+            else quad = 'Cuadrante IV (Diversificación)';
+
+            const badge = document.getElementById('dash-gran-status');
+            if (badge) badge.innerText = quad;
+        }
+
+
+        // --- MATRIZ DE PLANIFICACIÓN CUANTITATIVA (MCPE) ---
+        function renderMcpeTable() {
+            const tbody = document.getElementById('mcpe-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            // Factores Internos (EFI)
+            if (efiFactors.length > 0) {
+                tbody.innerHTML += `
+                    <tr class="bg-pastel-bg/50 font-bold text-pastel-cafe">
+                        <td colspan="4" class="p-2 pl-3">FACTORES INTERNOS (Sincronizados de EFI)</td>
+                    </tr>
+                `;
+                efiFactors.forEach(factor => {
+                    const e1_tot = (factor.peso * factor.e1_atractivo).toFixed(2);
+                    const e2_tot = (factor.peso * factor.e2_atractivo).toFixed(2);
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-pastel-bg/20">
+                            <td class="p-3 font-medium text-pastel-cafe">${factor.type.toUpperCase()}: ${factor.desc}</td>
+                            <td class="p-3 text-center font-bold">${factor.peso.toFixed(2)}</td>
+                            <td class="p-3 text-center bg-emerald-50/20">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <select onchange="updateMcpeScore('${factor.id}', 'e1', this.value)" class="p-1 border rounded bg-white font-bold">
+                                        <option value="0" ${factor.e1_atractivo === 0 ? 'selected' : ''}>-</option>
+                                        <option value="1" ${factor.e1_atractivo === 1 ? 'selected' : ''}>1</option>
+                                        <option value="2" ${factor.e1_atractivo === 2 ? 'selected' : ''}>2</option>
+                                        <option value="3" ${factor.e1_atractivo === 3 ? 'selected' : ''}>3</option>
+                                        <option value="4" ${factor.e1_atractivo === 4 ? 'selected' : ''}>4</option>
+                                    </select>
+                                    <span class="text-[10px] text-pastel-accent font-bold">(${e1_tot})</span>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center bg-blue-50/20">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <select onchange="updateMcpeScore('${factor.id}', 'e2', this.value)" class="p-1 border rounded bg-white font-bold">
+                                        <option value="0" ${factor.e2_atractivo === 0 ? 'selected' : ''}>-</option>
+                                        <option value="1" ${factor.e2_atractivo === 1 ? 'selected' : ''}>1</option>
+                                        <option value="2" ${factor.e2_atractivo === 2 ? 'selected' : ''}>2</option>
+                                        <option value="3" ${factor.e2_atractivo === 3 ? 'selected' : ''}>3</option>
+                                        <option value="4" ${factor.e2_atractivo === 4 ? 'selected' : ''}>4</option>
+                                    </select>
+                                    <span class="text-[10px] text-pastel-accent font-bold">(${e2_tot})</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Factores Externos (EFE)
+            if (efeFactors.length > 0) {
+                tbody.innerHTML += `
+                    <tr class="bg-pastel-bg/50 font-bold text-pastel-cafe">
+                        <td colspan="4" class="p-2 pl-3">FACTORES EXTERNOS (Sincronizados de EFE)</td>
+                    </tr>
+                `;
+                efeFactors.forEach(factor => {
+                    const e1_tot = (factor.peso * factor.e1_atractivo).toFixed(2);
+                    const e2_tot = (factor.peso * factor.e2_atractivo).toFixed(2);
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-pastel-bg/20">
+                            <td class="p-3 font-medium text-pastel-cafe">${factor.type.toUpperCase()}: ${factor.desc}</td>
+                            <td class="p-3 text-center font-bold">${factor.peso.toFixed(2)}</td>
+                            <td class="p-3 text-center bg-emerald-50/20">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <select onchange="updateMcpeScore('${factor.id}', 'e1', this.value)" class="p-1 border rounded bg-white font-bold">
+                                        <option value="0" ${factor.e1_atractivo === 0 ? 'selected' : ''}>-</option>
+                                        <option value="1" ${factor.e1_atractivo === 1 ? 'selected' : ''}>1</option>
+                                        <option value="2" ${factor.e1_atractivo === 2 ? 'selected' : ''}>2</option>
+                                        <option value="3" ${factor.e1_atractivo === 3 ? 'selected' : ''}>3</option>
+                                        <option value="4" ${factor.e1_atractivo === 4 ? 'selected' : ''}>4</option>
+                                    </select>
+                                    <span class="text-[10px] text-pastel-accent font-bold">(${e1_tot})</span>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center bg-blue-50/20">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <select onchange="updateMcpeScore('${factor.id}', 'e2', this.value)" class="p-1 border rounded bg-white font-bold">
+                                        <option value="0" ${factor.e2_atractivo === 0 ? 'selected' : ''}>-</option>
+                                        <option value="1" ${factor.e2_atractivo === 1 ? 'selected' : ''}>1</option>
+                                        <option value="2" ${factor.e2_atractivo === 2 ? 'selected' : ''}>2</option>
+                                        <option value="3" ${factor.e2_atractivo === 3 ? 'selected' : ''}>3</option>
+                                        <option value="4" ${factor.e2_atractivo === 4 ? 'selected' : ''}>4</option>
+                                    </select>
+                                    <span class="text-[10px] text-pastel-accent font-bold">(${e2_tot})</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const totals = calculateMcpeTotals();
+            tbody.innerHTML += `
+                <tr class="bg-pastel-bg font-bold text-sm text-pastel-cafe">
+                    <td class="p-3">Suma de Atractivo Colectivo (PTAC)</td>
+                    <td class="p-3 text-center"></td>
+                    <td class="p-3 text-center bg-emerald-100/50 text-emerald-800 text-lg">${totals.e1.toFixed(2)}</td>
+                    <td class="p-3 text-center bg-blue-100/50 text-blue-800 text-lg">${totals.e2.toFixed(2)}</td>
+                </tr>
+            `;
+
+            updateWinnerBadge(totals);
+        }
+
+        function updateMcpeScore(id, strategy, val) {
+            let factor = efiFactors.find(f => f.id === id) || efeFactors.find(f => f.id === id);
+            if (factor) {
+                if (strategy === 'e1') factor.e1_atractivo = parseInt(val) || 0;
+                else factor.e2_atractivo = parseInt(val) || 0;
+                renderMcpeTable();
+            }
+        }
+
+        function calculateMcpeTotals() {
+            let e1 = 0, e2 = 0;
+            efiFactors.forEach(f => {
+                e1 += f.peso * f.e1_atractivo;
+                e2 += f.peso * f.e2_atractivo;
+            });
+            efeFactors.forEach(f => {
+                e1 += f.peso * f.e1_atractivo;
+                e2 += f.peso * f.e2_atractivo;
+            });
+            return { e1, e2 };
+        }
+
+        function updateWinnerBadge(totals) {
+            const badge = document.getElementById('mcpe-winner-badge');
+            const dashOptima = document.getElementById('dash-optima-estrategia');
+            let winner = '';
+
+            if (totals.e1 > totals.e2) {
+                winner = 'E1: Alianza Flotas Públicas';
+                if (badge) badge.className = "px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold flex items-center space-x-1.5 self-start border border-emerald-200";
+            } else if (totals.e2 > totals.e1) {
+                winner = 'E2: Suscripciones y Renting';
+                if (badge) badge.className = "px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold flex items-center space-x-1.5 self-start border border-blue-200";
+            } else {
+                winner = 'Empate Estratégico';
+                if (badge) badge.className = "px-3 py-1.5 bg-gray-50 text-gray-700 rounded-full text-xs font-bold flex items-center space-x-1.5 self-start border border-gray-200";
+            }
+
+            if (badge) badge.innerHTML = `<i data-lucide="award" class="w-4 h-4"></i> <span>Ganadora: ${winner}</span>`;
+            if (dashOptima) dashOptima.innerText = winner;
+            lucide.createIcons();
+
+            if (chartMcpe) {
+                chartMcpe.data.datasets[0].data = [totals.e1, totals.e2];
+                chartMcpe.update();
+            }
+        }
+
+        function recalculateMcpe() {
+            const totals = calculateMcpeTotals();
+            if (chartMcpe) {
+                chartMcpe.data.datasets[0].data = [totals.e1, totals.e2];
+                chartMcpe.update();
+            }
+        }
+
+
+        // --- ADMNISTRACIÓN DE CATÁLOGO DINÁMICO DE KPIS ---
+        function renderKpisCatalog() {
+            const container = document.getElementById('kpis-catalog-list');
+            const selector = document.getElementById('active-kpi-selector');
+            const smartSelector = document.getElementById('smart-input-kpi');
+            
+            if (container) container.innerHTML = '';
+            
+            let selectorOptionsHTML = '';
+
+            kpis.forEach(k => {
+                if (container) {
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between p-2 bg-white rounded-xl border border-pastel-rosa/30 text-xs">
+                            <div>
+                                <span class="font-bold text-pastel-cafe">${k.name}</span>
+                                <span class="text-[10px] text-pastel-accent block">Unidad: ${k.unit} | ${k.inverse ? 'Inverso' : 'Directo'}</span>
+                            </div>
+                            <!-- Solo permitir borrar si es creado por el usuario (no los iniciales para no romper el dashboard inicial) -->
+                            ${['ventas', 'co2', 'rotacion', 'penetracion'].includes(k.id) ? '' : `
+                                <button onclick="deleteCustomKpi('${k.id}')" class="text-pastel-coral hover:text-red-700">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            `}
+                        </div>
+                    `;
+                }
+                selectorOptionsHTML += `<option value="${k.id}" ${k.id === activeKpiId ? 'selected' : ''}>${k.name} (${k.unit})</option>`;
+            });
+
+            if (selector) {
+                selector.innerHTML = selectorOptionsHTML;
+            }
+
+            if (smartSelector) {
+                smartSelector.innerHTML = selectorOptionsHTML;
+                // Gatillar actualización de unidad de medida del primer KPI activo
+                onSmartKpiSelectorChange();
+            }
+
+            // Escuchar cambios en el selector de KPI del modal de Objetivos SMART
+            if (smartSelector && !smartSelector.hasAttribute('data-listener')) {
+                smartSelector.setAttribute('data-listener', 'true');
+                smartSelector.addEventListener('change', onSmartKpiSelectorChange);
+            }
+
+            lucide.createIcons();
+        }
+
+        function onSmartKpiSelectorChange() {
+            const smartSelector = document.getElementById('smart-input-kpi');
+            const unitInput = document.getElementById('smart-input-unit');
+            if (smartSelector && unitInput) {
+                const selectedKpiId = smartSelector.value;
+                const kpi = kpis.find(k => k.id === selectedKpiId);
+                if (kpi) {
+                    unitInput.value = kpi.unit;
+                }
+            }
+        }
+
+        function addNewCustomKpi() {
+            const name = document.getElementById('new-kpi-name').value.trim();
+            const unit = document.getElementById('new-kpi-unit').value.trim();
+            const inverse = document.getElementById('new-kpi-inverse').value === 'true';
+
+            if (!name || !unit) {
+                alert("Por favor ingresa un nombre y unidad válidos para el nuevo KPI.");
+                return;
+            }
+
+            const nextId = 'kpi-' + Date.now();
+            // Inicializar datos históricos en 0 o promedio sutil
+            const initialMonthlyValues = [50, 60, 70, 80, 90]; 
+
+            kpis.push({
+                id: nextId,
+                name: name,
+                unit: unit,
+                inverse: inverse,
+                monthlyData: initialMonthlyValues
+            });
+
+            // Limpiar inputs
+            document.getElementById('new-kpi-name').value = '';
+            document.getElementById('new-kpi-unit').value = '';
+
+            activeKpiId = nextId; // Hacer activo el KPI creado para cargarlo de inmediato
+
+            renderKpisCatalog();
+            renderKpiMonthlyInputs();
+            updateKpiChartData();
+            simulateKpiData();
+        }
+
+        function deleteCustomKpi(id) {
+            kpis = kpis.filter(k => k.id !== id);
+            smartObjectives = smartObjectives.filter(o => o.kpiLinked !== id); // desvincular objetivos asociados
+            if (activeKpiId === id) {
+                activeKpiId = kpis[0].id;
+            }
+            renderKpisCatalog();
+            renderKpiMonthlyInputs();
+            updateKpiChartData();
+            simulateKpiData();
+        }
+
+        function onActiveKpiChange() {
+            const selector = document.getElementById('active-kpi-selector');
+            if (selector) {
+                activeKpiId = selector.value;
+                renderKpiMonthlyInputs();
+                updateKpiChartData();
+            }
+        }
+
+        // Carga los inputs mensuales correspondientes al KPI activo para poder editarlos uno a uno
+        function renderKpiMonthlyInputs() {
+            const container = document.getElementById('kpi-monthly-inputs-container');
+            if (!container) return;
+            
+            const activeKpi = kpis.find(k => k.id === activeKpiId);
+            if (!activeKpi) return;
+
+            container.innerHTML = `<span class="text-xs font-bold text-pastel-cafe block border-b pb-1">Valores para: ${activeKpi.name}</span>`;
+
+            kpiMonths.forEach((m, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between p-2 bg-pastel-bg rounded-xl border border-pastel-rosa/30 text-xs">
+                        <span class="font-bold text-pastel-cafe w-12">${m}:</span>
+                        <div class="flex items-center">
+                            <input type="number" value="${activeKpi.monthlyData[idx] || 0}" 
+                                   onchange="updateKpiMonthValue('${activeKpi.id}', ${idx}, this.value)" 
+                                   class="w-20 border p-1 rounded bg-white text-center font-bold outline-none">
+                            <span class="ml-1.5 font-bold text-pastel-accent">${activeKpi.unit}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateKpiMonthValue(kpiId, monthIdx, val) {
+            const kpi = kpis.find(k => k.id === kpiId);
+            if (kpi) {
+                kpi.monthlyData[monthIdx] = parseFloat(val) || 0;
+                updateKpiChartData();
+            }
+        }
+
+
+        // --- SCRIPT PARA GESTIONAR LOS OBJETIVOS SMART CONECTADOS ---
+        function renderSmartObjectives() {
+            const listContainer = document.getElementById('smart-objectives-list');
+            const dashListContainer = document.getElementById('dash-smart-list');
+            if (!listContainer) return;
+            
+            listContainer.innerHTML = '';
+            if (dashListContainer) dashListContainer.innerHTML = '';
+
+            // Obtener valores vigentes reales calculados de los KPIs
+            const totals = getKpiCurrentValues();
+
+            smartObjectives.forEach(obj => {
+                // Sincronizar valor real del KPI mapeado
+                let currentVal = totals[obj.kpiLinked] || 0;
+                
+                // Calcular % de cumplimiento de acuerdo con el tipo de optimización (directa o inversa)
+                let pct = 0;
+                if (obj.inverse) {
+                    pct = currentVal > 0 ? (obj.target / currentVal) * 100 : 0;
+                } else {
+                    pct = obj.target > 0 ? (currentVal / obj.target) * 100 : 0;
+                }
+                pct = Math.min(150, Math.round(pct)); // tope estético visual de 150%
+
+                let barColor = 'bg-pastel-cafe';
+                if (pct >= 100) barColor = 'bg-green-500';
+                else if (pct >= 70) barColor = 'bg-amber-500';
+                else barColor = 'bg-pastel-coral';
+
+                const cardHtml = `
+                    <div class="p-4 bg-pastel-bg rounded-2xl border border-pastel-rosa/50 space-y-3 relative group">
+                        <button onclick="deleteSmartObjective(${obj.id})" class="absolute top-3 right-3 text-pastel-coral opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                        <div class="flex justify-between items-start gap-4">
+                            <div>
+                                <h4 class="font-bold text-sm text-pastel-cafe leading-snug">${obj.text}</h4>
+                                <p class="text-[10px] text-pastel-accent mt-1 uppercase font-semibold">
+                                    Indicador: <span class="text-pastel-cafe font-bold">${obj.kpiLinked.toUpperCase()}</span> | 
+                                    Meta: <span class="font-bold">${obj.target}${obj.unit}</span> | 
+                                    Actual: <span class="font-bold text-pastel-cafe">${currentVal}${obj.unit}</span>
+                                </p>
+                            </div>
+                            <span class="text-xs font-bold text-pastel-cafe bg-white px-2 py-1 rounded-lg border border-pastel-rosa">${pct}%</span>
+                        </div>
+                        <div class="w-full bg-white h-2.5 rounded-full overflow-hidden border border-pastel-rosa/30">
+                            <div class="${barColor} h-full rounded-full transition-all duration-300" style="width: ${Math.min(100, pct)}%"></div>
+                        </div>
+                    </div>
+                `;
+
+                listContainer.innerHTML += cardHtml;
+
+                // Renderizar en el mini-panel del dashboard
+                if (dashListContainer) {
+                    dashListContainer.innerHTML += `
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-[11px] font-semibold">
+                                <span class="text-pastel-cafe truncate max-w-[180px]">${obj.text}</span>
+                                <span class="text-pastel-accent font-bold">${pct}%</span>
+                            </div>
+                            <div class="w-full bg-pastel-bg h-1.5 rounded-full overflow-hidden">
+                                <div class="${barColor} h-full rounded-full" style="width: ${Math.min(100, pct)}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            lucide.createIcons();
+        }
+
+        // Obtener valores consolidados vigentes de KPIs en base a simulación y meses
+        function getKpiCurrentValues() {
+            const simulator = document.getElementById('kpi-simulator');
+            const factor = simulator ? (parseFloat(simulator.value) / 100) : 1.0;
+            let currentValues = {};
+
+            kpis.forEach(k => {
+                const simulatedData = k.monthlyData.map(val => {
+                    if (k.inverse) {
+                        return Math.round(val / factor);
+                    } else {
+                        return Math.round(val * factor * 10) / 10;
+                    }
+                });
+
+                // Si es acumulativo o porcentaje/dias
+                if (k.unit === '%' || k.unit === 'Días' || k.inverse) {
+                    currentValues[k.id] = simulatedData[simulatedData.length - 1] || 0;
+                } else {
+                    currentValues[k.id] = Math.round(simulatedData.reduce((a, b) => a + b, 0));
+                }
+            });
+
+            return currentValues;
+        }
+
+        function saveSmartObjective() {
+            const text = document.getElementById('smart-input-text').value.trim();
+            const kpiLinked = document.getElementById('smart-input-kpi').value;
+            const target = parseFloat(document.getElementById('smart-input-target').value) || 0;
+            const unit = document.getElementById('smart-input-unit').value.trim();
+
+            if (!text) {
+                alert("Por favor ingresa la descripción del objetivo.");
+                return;
+            }
+
+            const selectedKpi = kpis.find(k => k.id === kpiLinked);
+            const inverse = selectedKpi ? selectedKpi.inverse : false;
+
+            const newId = smartObjectives.length > 0 ? Math.max(...smartObjectives.map(o => o.id)) + 1 : 1;
+            smartObjectives.push({ id: newId, text, kpiLinked, target, unit, inverse });
+            
+            // Limpiar formulario básico
+            document.getElementById('smart-input-text').value = '';
+            
+            renderSmartObjectives();
+        }
+
+        function deleteSmartObjective(id) {
+            smartObjectives = smartObjectives.filter(o => o.id !== id);
+            renderSmartObjectives();
+        }
+
+
+        // --- RENDIMIENTO MENSUAL KPIS & DISPOSITIVOS ---
+        function renderDashboardWidgets() {
+            const cardsContainer = document.getElementById('dash-quick-cards');
+            const kpiValuesContainer = document.getElementById('dash-panel-kpis-values');
+            
+            if (cardsContainer) cardsContainer.innerHTML = '';
+            if (kpiValuesContainer) kpiValuesContainer.innerHTML = '';
+
+            const currentKpisVals = getKpiCurrentValues();
+
+            kpis.forEach((k, idx) => {
+                const val = currentKpisVals[k.id];
+                
+                // Limitar a máximo 4 widgets principales de KPI en tarjetas superiores para simular el diseño inicial
+                if (cardsContainer && idx < 4) {
+                    let cardIcon = 'activity';
+                    if (k.id === 'ventas') cardIcon = 'shield-check';
+                    else if (k.id === 'co2') cardIcon = 'zap';
+                    else if (k.id === 'rotacion') cardIcon = 'refresh-cw';
+                    else if (k.id === 'penetracion') cardIcon = 'percent';
+
+                    cardsContainer.innerHTML += `
+                        <div class="bg-white p-6 rounded-3xl border border-pastel-rosa shadow-sm flex items-center space-x-4">
+                            <div class="p-4 bg-pastel-rosa/40 rounded-2xl text-pastel-cafe">
+                                <i data-lucide="${cardIcon}" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-pastel-accent font-medium">${k.name}</p>
+                                <h3 class="text-lg font-bold text-pastel-cafe">${val} ${k.unit}</h3>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Inyectar en el consolidado general de simulación (Panel derecho de KPI)
+                if (kpiValuesContainer) {
+                    let textIcon = 'zap';
+                    let iconColor = 'text-amber-500';
+                    if (k.unit === '%') { textIcon = 'percent'; iconColor = 'text-indigo-500'; }
+                    else if (k.inverse) { textIcon = 'refresh-cw'; iconColor = 'text-pastel-coral'; }
+
+                    kpiValuesContainer.innerHTML += `
+                        <div class="flex justify-between items-center bg-pastel-bg p-3.5 rounded-2xl border border-pastel-rosa/50">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="${textIcon}" class="w-5 h-5 ${iconColor}"></i>
+                                <span class="text-xs font-bold text-pastel-cafe">${k.name}</span>
+                            </div>
+                            <span class="text-sm font-bold text-pastel-cafe">${val} ${k.unit}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            lucide.createIcons();
+        }
+
+        // --- KPIS DINÁMICOS POR MES ---
+        function renderKpiMonths() {
+            // Sincronizar el input de visualización mensual
+            renderKpiMonthlyInputs();
+        }
+
+        function addKpiMonth() {
+            const monthsNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const nextIndex = kpiMonths.length;
+            const name = monthsNames[nextIndex % 12];
+            kpiMonths.push(name);
+            
+            // Añadir valor default a cada KPI activo para mantener la consistencia
+            kpis.forEach(k => {
+                k.monthlyData.push(k.monthlyData[k.monthlyData.length - 1] || 50);
+            });
+
+            renderKpiMonthlyInputs();
+            updateKpiChartData();
+        }
+
+        function removeKpiMonth(index) {
+            if (kpiMonths.length <= 1) return;
+            kpiMonths.splice(index, 1);
+            kpis.forEach(k => {
+                k.monthlyData.splice(index, 1);
+            });
+            renderKpiMonthlyInputs();
+            updateKpiChartData();
+        }
+
+        function updateKpiChartData() {
+            if (chartKpis) {
+                const activeKpi = kpis.find(k => k.id === activeKpiId);
+                if (activeKpi) {
+                    chartKpis.data.labels = kpiMonths;
+                    chartKpis.data.datasets[0].label = activeKpi.name + ` (${activeKpi.unit})`;
+                    chartKpis.data.datasets[0].data = activeKpi.monthlyData;
+                    chartKpis.update();
+                }
+            }
+            simulateKpiData();
+        }
+
+        function simulateKpiData() {
+            const simulator = document.getElementById('kpi-simulator');
+            if (!simulator) return; 
+
+            const factor = parseFloat(simulator.value) / 100;
+            const label = document.getElementById('simulator-label');
+            if (label) label.innerText = `${Math.round(factor * 100)}%`;
+
+            if (chartKpis) {
+                const activeKpi = kpis.find(k => k.id === activeKpiId);
+                if (activeKpi && kpiMonths.length > 0) {
+                    const simulatedReal = activeKpi.monthlyData.map(val => {
+                        if (activeKpi.inverse) {
+                            return Math.round(val / factor);
+                        } else {
+                            return Math.round(val * factor);
+                        }
+                    });
+                    chartKpis.data.datasets[0].data = simulatedReal;
+                    chartKpis.update();
+                }
+            }
+
+            // Consolidar valores calculados de KPIs
+            const kpisVals = getKpiCurrentValues();
+
+            // Sincronizar el Dashboard y metas
+            renderDashboardWidgets();
+            renderSmartObjectives();
+        }
+    </script>
+</body>
+</html>
