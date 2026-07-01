@@ -1,0 +1,2693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoltEcuador - Dashboard Estratégico Multimatriz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons para Iconografía Moderna -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8FAFC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            deep: '#0F172A',      // Slate 900 (Fondo principal / Textos oscuros)
+                            slate: '#1E293B',     // Slate 800 (Tarjetas oscuras)
+                            primary: '#0D9488',   // Deep Teal (Acción principal elegante)
+                            secondary: '#0F766E', // Teal más profundo
+                            accent: '#D97706',    // Oro/Ámbar (Resaltados y KPI)
+                            success: '#10B981',   // Esmeralda (Éxito y avance óptimo)
+                            warning: '#F59E0B',   // Ámbar (Alertas e intensidad media)
+                            danger: '#EF4444',    // Rojo (Gravedad / Fuerzas de Porter)
+                            bg: '#F8FAFC',        // Slate 50 (Fondo general refinado)
+                            card: '#FFFFFF',      // Blanco puro para contenedores
+                            border: '#E2E8F0',    // Gris de borde refinado
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-bg text-brand-deep min-h-screen flex flex-col">
+
+    <!-- NOTIFICACIONES TOAST PREMIUM -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full"></div>
+
+    <!-- HEADER CORPORATIVO -->
+    <header class="bg-brand-deep text-white shadow-lg border-b border-brand-slate sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-brand-primary to-brand-accent p-2.5 rounded-xl shadow-md">
+                    <i data-lucide="activity" class="w-7 h-7 text-white animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-teal-400 bg-clip-text text-transparent">VoltEcuador</h1>
+                    <p class="text-xs text-slate-400 font-medium tracking-wide">Plataforma Estratégica Integral</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <button onclick="exportStandAloneHTML()" class="flex items-center space-x-2 bg-gradient-to-r from-brand-primary to-teal-600 hover:from-teal-600 hover:to-brand-secondary text-white px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 shadow-md">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Exportar Dashboard (.HTML)</span>
+                </button>
+                <div class="hidden sm:flex items-center space-x-2 bg-brand-slate px-4 py-2 rounded-xl border border-slate-700">
+                    <span class="w-2.5 h-2.5 bg-brand-success rounded-full animate-ping"></span>
+                    <span class="text-xs text-slate-300 font-medium">Autoguardado Activo</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BARRA DE NAVEGACIÓN COMPACTA Y RESPONSIVA -->
+    <nav class="bg-white border-b border-brand-border sticky top-20 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-1 overflow-x-auto py-3 justify-start lg:justify-center">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-300 bg-brand-primary text-white shadow-md shrink-0">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                    <span>Resumen</span>
+                </button>
+                <button onclick="switchTab('pestel')" id="btn-pestel" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="globe" class="w-4 h-4"></i>
+                    <span>PESTEL & Porter</span>
+                </button>
+                <button onclick="switchTab('foda')" id="btn-foda" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="split" class="w-4 h-4"></i>
+                    <span>FODA & Cruzado</span>
+                </button>
+                <button onclick="switchTab('efeefi')" id="btn-efeefi" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="list-checks" class="w-4 h-4"></i>
+                    <span>Matrices EFE / EFI</span>
+                </button>
+                <button onclick="switchTab('peyea')" id="btn-peyea" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                    <span>PEYEA</span>
+                </button>
+                <button onclick="switchTab('bcg')" id="btn-bcg" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                    <span>Matriz BCG</span>
+                </button>
+                <button onclick="switchTab('mckinsey')" id="btn-mckinsey" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="grid" class="w-4 h-4"></i>
+                    <span>McKinsey & Gran Estrategia</span>
+                </button>
+                <button onclick="switchTab('mcpe')" id="btn-mcpe" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    <span>MCPE</span>
+                </button>
+                <button onclick="switchTab('poa')" id="btn-poa" class="nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0">
+                    <i data-lucide="calendar-range" class="w-4 h-4"></i>
+                    <span>POA & KPIs</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- 0. DASHBOARD RESUMEN -->
+        <section id="section-dashboard" class="tab-content space-y-8 animate-fade-in">
+            <div class="bg-gradient-to-r from-brand-slate to-brand-deep rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute right-0 top-0 opacity-10 transform translate-x-12 -translate-y-12">
+                    <i data-lucide="activity" class="w-80 h-80"></i>
+                </div>
+                <div class="relative z-10 max-w-3xl">
+                    <span class="bg-brand-primary text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Planificación Estratégica Multi-Enfoque</span>
+                    <h2 class="text-3xl font-extrabold mt-3 tracking-tight">Consola Integral Directiva</h2>
+                    <p class="text-slate-300 mt-2 text-sm leading-relaxed">Bienvenido a su centro estratégico unificado para VoltEcuador. Ahora integra análisis de entorno (PESTEL, Porter), matrices cuantitativas de factores (EFE, EFI), análisis dinámico interno (FODA, FODA Cruzado), posicionamiento de portafolio (BCG, McKinsey), formulaciones del vector de acción (PEYEA), selección automatizada (MCPE) y control táctico operacional (POA y KPIs).</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card KPI 1 -->
+                <div class="bg-white rounded-2xl border border-brand-border p-5 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="globe" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Puntuación EFE</p>
+                        <h3 id="dash-efe-score" class="text-2xl font-black mt-1 text-slate-800">1.00</h3>
+                        <p class="text-xs text-slate-400 mt-1">Factores Externos</p>
+                    </div>
+                </div>
+                <!-- Card KPI 2 -->
+                <div class="bg-white rounded-2xl border border-brand-border p-5 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <i data-lucide="list-checks" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Puntuación EFI</p>
+                        <h3 id="dash-efi-score" class="text-2xl font-black mt-1 text-slate-800">1.00</h3>
+                        <p class="text-xs text-slate-400 mt-1">Factores Internos</p>
+                    </div>
+                </div>
+                <!-- Card KPI 3 -->
+                <div class="bg-white rounded-2xl border border-brand-border p-5 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-amber-50 text-brand-accent rounded-xl">
+                        <i data-lucide="compass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Perfil PEYEA</p>
+                        <h3 id="dash-peyea-profile" class="text-xl font-bold mt-1 text-slate-800">No calculado</h3>
+                        <p class="text-xs text-slate-400 mt-1">Postura del Vector</p>
+                    </div>
+                </div>
+                <!-- Card KPI 4 -->
+                <div class="bg-white rounded-2xl border border-brand-border p-5 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-emerald-50 text-brand-success rounded-xl">
+                        <i data-lucide="calendar-range" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ejecución POA</p>
+                        <h3 id="dash-poa-progress" class="text-2xl font-bold mt-1 text-slate-800">0%</h3>
+                        <p class="text-xs text-slate-400 mt-1">Avance global del plan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acceso Directo de Configuración -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <h3 class="text-lg font-bold mb-4 flex items-center space-x-2 text-slate-800">
+                    <i data-lucide="sliders" class="w-5 h-5 text-brand-primary"></i>
+                    <span>Acciones de Mantenimiento de Datos</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <button onclick="resetAllData()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-semibold transition-all duration-300">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Reiniciar Datos</span>
+                    </button>
+                    <button onclick="loadSampleData()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-teal-50 hover:bg-teal-100 text-brand-primary rounded-xl font-semibold transition-all duration-300">
+                        <i data-lucide="database" class="w-4 h-4"></i>
+                        <span>Cargar Datos Demostrativos</span>
+                    </button>
+                    <button onclick="exportStandAloneHTML()" class="flex items-center justify-center space-x-2 px-4 py-3 bg-amber-50 hover:bg-amber-100 text-brand-accent rounded-xl font-semibold transition-all duration-300">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Exportar Backup HTML</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. PESTEL & PORTER -->
+        <section id="section-pestel" class="tab-content hidden space-y-8 animate-fade-in">
+            <!-- PESTEL SECTION -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="globe" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Análisis PESTEL</h2>
+                        <p class="text-xs text-slate-500">Evaluación de factores clave del entorno macro</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario PESTEL -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Añadir Factor PESTEL</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Dimensión</label>
+                                <select id="pestel-dimension" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="Político">Político</option>
+                                    <option value="Económico">Económico</option>
+                                    <option value="Social">Social</option>
+                                    <option value="Tecnológico">Tecnológico</option>
+                                    <option value="Ecológico">Ecológico</option>
+                                    <option value="Legal">Legal</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Descripción del Factor</label>
+                                <input type="text" id="pestel-desc" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Nuevas regulaciones arancelarias">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Impacto Esperado</label>
+                                <select id="pestel-impacto" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="Alto">Alto</option>
+                                    <option value="Medio">Medio</option>
+                                    <option value="Bajo">Bajo</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Tipo de Efecto</label>
+                                <select id="pestel-tipo" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="Oportunidad">Oportunidad</option>
+                                    <option value="Amenaza">Amenaza</option>
+                                </select>
+                            </div>
+                            <button onclick="addPestelItem()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar Factor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla PESTEL -->
+                    <div class="lg:col-span-2">
+                        <div class="overflow-x-auto max-h-[400px] border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs uppercase">
+                                    <tr>
+                                        <th class="p-4 rounded-tl-xl">Dimensión</th>
+                                        <th class="p-4">Descripción</th>
+                                        <th class="p-4">Impacto</th>
+                                        <th class="p-4">Tipo</th>
+                                        <th class="p-4 rounded-tr-xl text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pestel-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PORTER'S 5 FORCES -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-amber-50 text-brand-accent rounded-xl">
+                        <i data-lucide="shield" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Las 5 Fuerzas de Porter</h2>
+                        <p class="text-xs text-slate-500">Evaluación competitiva y atractivo de la industria</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario Porter -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Añadir Factor Competitivo</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Fuerza de Porter</label>
+                                <select id="porter-fuerza" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-accent outline-none">
+                                    <option value="Rivalidad de Competidores">Rivalidad de Competidores</option>
+                                    <option value="Nuevos Competidores">Amenaza de Nuevos Entrantes</option>
+                                    <option value="Productos Sustitutos">Amenaza de Sustitutos</option>
+                                    <option value="Poder de Proveedores">Poder de Negociación de Proveedores</option>
+                                    <option value="Poder de Clientes">Poder de Negociación de Clientes</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Factor Específico</label>
+                                <input type="text" id="porter-desc" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-accent outline-none" placeholder="Ej. Alta diferenciación de productos">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Nivel de Impacto/Amenaza</label>
+                                <select id="porter-nivel" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-accent outline-none">
+                                    <option value="Bajo">Bajo (Favorable)</option>
+                                    <option value="Medio">Medio (Neutro)</option>
+                                    <option value="Alto">Alto (Desfavorable)</option>
+                                </select>
+                            </div>
+                            <button onclick="addPorterItem()" class="w-full py-2.5 bg-brand-accent hover:bg-amber-600 text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar Factor Porter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla Porter -->
+                    <div class="lg:col-span-2">
+                        <div class="overflow-x-auto max-h-[400px] border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs uppercase">
+                                    <tr>
+                                        <th class="p-4 rounded-tl-xl">Fuerza</th>
+                                        <th class="p-4">Factor Evaluado</th>
+                                        <th class="p-4">Nivel/Amenaza</th>
+                                        <th class="p-4 rounded-tr-xl text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="porter-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. FODA & FODA CRUZADO (TOWS) -->
+        <section id="section-foda" class="tab-content hidden space-y-8 animate-fade-in">
+            <!-- FODA GRID VIEW -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="split" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Análisis FODA</h2>
+                        <p class="text-xs text-slate-500">Perspectivas internas y externas integradas (alimentadas dinámicamente desde EFE/EFI)</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Fortalezas -->
+                    <div class="p-5 bg-teal-50 border border-brand-primary/20 rounded-2xl">
+                        <h3 class="font-extrabold text-brand-primary text-sm uppercase tracking-wider mb-3 flex items-center space-x-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> <span>Fortalezas (Interno)</span>
+                        </h3>
+                        <ul id="foda-fortalezas-list" class="space-y-2 text-xs text-slate-700 min-h-[100px]"></ul>
+                    </div>
+
+                    <!-- Debilidades -->
+                    <div class="p-5 bg-rose-50 border border-brand-danger/20 rounded-2xl">
+                        <h3 class="font-extrabold text-brand-danger text-sm uppercase tracking-wider mb-3 flex items-center space-x-2">
+                            <i data-lucide="minus" class="w-4 h-4"></i> <span>Debilidades (Interno)</span>
+                        </h3>
+                        <ul id="foda-debilidades-list" class="space-y-2 text-xs text-slate-700 min-h-[100px]"></ul>
+                    </div>
+
+                    <!-- Oportunidades -->
+                    <div class="p-5 bg-emerald-50 border border-brand-success/20 rounded-2xl">
+                        <h3 class="font-extrabold text-brand-success text-sm uppercase tracking-wider mb-3 flex items-center space-x-2">
+                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i> <span>Oportunidades (Externo)</span>
+                        </h3>
+                        <ul id="foda-oportunidades-list" class="space-y-2 text-xs text-slate-700 min-h-[100px]"></ul>
+                    </div>
+
+                    <!-- Amenazas -->
+                    <div class="p-5 bg-amber-50 border border-brand-accent/20 rounded-2xl">
+                        <h3 class="font-extrabold text-brand-accent text-sm uppercase tracking-wider mb-3 flex items-center space-x-2">
+                            <i data-lucide="shield-alert" class="w-4 h-4"></i> <span>Amenazas (Externo)</span>
+                        </h3>
+                        <ul id="foda-amenazas-list" class="space-y-2 text-xs text-slate-700 min-h-[100px]"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FODA CRUZADO (MATRIZ TOWS) INTERACTIVA -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de FODA Cruzado (Estrategias TOWS)</h2>
+                        <p class="text-xs text-slate-500">Planifique cruzando fortalezas, debilidades, oportunidades y amenazas</p>
+                    </div>
+                    <div class="mt-3 md:mt-0 flex space-x-2">
+                        <select id="tows-cuadrante" class="px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold focus:ring-2 focus:ring-brand-primary outline-none">
+                            <option value="FO">Estrategias FO (Maxi-Maxi)</option>
+                            <option value="DO">Estrategias DO (Mini-Maxi)</option>
+                            <option value="FA">Estrategias FA (Maxi-Mini)</option>
+                            <option value="DA">Estrategias DA (Mini-Mini)</option>
+                        </select>
+                        <input type="text" id="tows-desc" class="px-3 py-2 w-64 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Descripción de la estrategia cruzada">
+                        <button onclick="addTowsStrategy()" class="bg-brand-primary hover:bg-brand-secondary text-white text-xs font-bold px-4 py-2 rounded-lg transition-all duration-300">
+                            Añadir
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- FO -->
+                    <div class="border border-emerald-200 rounded-2xl p-5 bg-white shadow-sm">
+                        <div class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+                            Estrategias FO (Fortalezas + Oportunidades)
+                        </div>
+                        <p class="text-slate-400 text-[11px] mb-3">Utilizar las fuerzas internas para maximizar las oportunidades del exterior.</p>
+                        <ul id="tows-fo-list" class="space-y-2 text-xs divide-y divide-slate-100"></ul>
+                    </div>
+
+                    <!-- DO -->
+                    <div class="border border-teal-200 rounded-2xl p-5 bg-white shadow-sm">
+                        <div class="bg-teal-600 text-white px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+                            Estrategias DO (Debilidades + Oportunidades)
+                        </div>
+                        <p class="text-slate-400 text-[11px] mb-3">Superar las flaquezas internas aprovechando las ventajas externas del mercado.</p>
+                        <ul id="tows-do-list" class="space-y-2 text-xs divide-y divide-slate-100"></ul>
+                    </div>
+
+                    <!-- FA -->
+                    <div class="border border-amber-200 rounded-2xl p-5 bg-white shadow-sm">
+                        <div class="bg-brand-accent text-white px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+                            Estrategias FA (Fortalezas + Amenazas)
+                        </div>
+                        <p class="text-slate-400 text-[11px] mb-3">Utilizar las fortalezas de la organización para evadir o atenuar el impacto de amenazas externas.</p>
+                        <ul id="tows-fa-list" class="space-y-2 text-xs divide-y divide-slate-100"></ul>
+                    </div>
+
+                    <!-- DA -->
+                    <div class="border border-red-200 rounded-2xl p-5 bg-white shadow-sm">
+                        <div class="bg-brand-danger text-white px-3 py-1.5 rounded-lg text-xs font-extrabold uppercase tracking-wider inline-block mb-3">
+                            Estrategias DA (Debilidades + Amenazas)
+                        </div>
+                        <p class="text-slate-400 text-[11px] mb-3">Reducir al mínimo las flaquezas internas y evitar a toda costa los peligros del entorno.</p>
+                        <ul id="tows-da-list" class="space-y-2 text-xs divide-y divide-slate-100"></ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. MATRICES EFE & EFI -->
+        <section id="section-efeefi" class="tab-content hidden space-y-8 animate-fade-in">
+            <!-- MATRIZ EFE (EXTERNA) -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="globe" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Evaluación de Factores Externos (EFE)</h2>
+                        <p class="text-xs text-slate-500">Evaluación ponderada de oportunidades y amenazas críticas</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario EFE -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Añadir Factor Externo</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Clasificación</label>
+                                <select id="efe-tipo" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="Oportunidad">Oportunidad</option>
+                                    <option value="Amenaza">Amenaza</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Factor Crítico</label>
+                                <input type="text" id="efe-factor" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Mercado emergente en crecimiento">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Ponderación / Peso (0.00 a 1.00)</label>
+                                <input type="number" id="efe-peso" step="0.01" min="0" max="1" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 0.15">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Calificación (1 a 4)</label>
+                                <select id="efe-calif" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="1">1 - Respuesta Pobre</option>
+                                    <option value="2">2 - Respuesta Promedio</option>
+                                    <option value="3">3 - Respuesta Superior a la Media</option>
+                                    <option value="4">4 - Respuesta Excelente</option>
+                                </select>
+                            </div>
+                            <button onclick="addEfeItem()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar a EFE
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla EFE -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs uppercase">
+                                    <tr>
+                                        <th class="p-4 rounded-tl-xl">Tipo</th>
+                                        <th class="p-4">Factor Externo</th>
+                                        <th class="p-4">Ponderación</th>
+                                        <th class="p-4">Calificación</th>
+                                        <th class="p-4">Valor Ponderado</th>
+                                        <th class="p-4 rounded-tr-xl text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="efe-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                                <tfoot class="bg-slate-50 font-bold border-t border-slate-200">
+                                    <tr>
+                                        <td colspan="2" class="p-4 text-slate-800">Total</td>
+                                        <td id="efe-weight-total" class="p-4 text-slate-800">0.00</td>
+                                        <td class="p-4"></td>
+                                        <td id="efe-weighted-total" class="p-4 text-brand-primary text-base font-black">0.00</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div id="efe-weight-warning" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MATRIZ EFI (INTERNA) -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <i data-lucide="list-checks" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Evaluación de Factores Internos (EFI)</h2>
+                        <p class="text-xs text-slate-500">Evaluación ponderada de fortalezas y debilidades claves</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario EFI -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Añadir Factor Interno</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Clasificación</label>
+                                <select id="efi-tipo" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="Fortaleza">Fortaleza</option>
+                                    <option value="Debilidad">Debilidad</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Factor Crítico</label>
+                                <input type="text" id="efi-factor" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Equipo técnico certificado">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Ponderación / Peso (0.00 a 1.00)</label>
+                                <input type="number" id="efi-peso" step="0.01" min="0" max="1" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 0.20">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Calificación (1 a 4)</label>
+                                <select id="efi-calif" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                    <option value="1">1 - Debilidad Mayor</option>
+                                    <option value="2">2 - Debilidad Menor</option>
+                                    <option value="3">3 - Fortaleza Menor</option>
+                                    <option value="4">4 - Fortaleza Mayor</option>
+                                </select>
+                            </div>
+                            <button onclick="addEfiItem()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar a EFI
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla EFI -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs uppercase">
+                                    <tr>
+                                        <th class="p-4 rounded-tl-xl">Tipo</th>
+                                        <th class="p-4">Factor Interno</th>
+                                        <th class="p-4">Ponderación</th>
+                                        <th class="p-4">Calificación</th>
+                                        <th class="p-4">Valor Ponderado</th>
+                                        <th class="p-4 rounded-tr-xl text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="efi-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                                <tfoot class="bg-slate-50 font-bold border-t border-slate-200">
+                                    <tr>
+                                        <td colspan="2" class="p-4 text-slate-800">Total</td>
+                                        <td id="efi-weight-total" class="p-4 text-slate-800">0.00</td>
+                                        <td class="p-4"></td>
+                                        <td id="efi-weighted-total" class="p-4 text-indigo-600 text-base font-black">0.00</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div id="efi-weight-warning" class="hidden p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. MATRIZ PEYEA -->
+        <section id="section-peyea" class="tab-content hidden space-y-8 animate-fade-in">
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="compass" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Posición Estratégica y Evaluación de Acción (PEYEA)</h2>
+                        <p class="text-xs text-slate-500">Establece la postura estratégica (Agresiva, Conservadora, Defensiva o Competitiva)</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Ingreso de Factores de las Cuatro Dimensiones -->
+                    <div class="space-y-6">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Agregar Factor de Evaluación</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Dimensión</label>
+                                    <select id="peyea-dim" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                        <option value="FF">Fuerza Financiera (FF) [Positivo: 1 a 6]</option>
+                                        <option value="FI">Fuerza de la Industria (FI) [Positivo: 1 a 6]</option>
+                                        <option value="VC">Ventaja Competitiva (VC) [Negativo: -1 a -6]</option>
+                                        <option value="EE">Estabilidad del Entorno (EE) [Negativo: -1 a -6]</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Calificación (Puntuación)</label>
+                                    <input type="number" id="peyea-score" min="-6" max="6" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Valor numérico">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Factor / Criterio</label>
+                                <input type="text" id="peyea-factor" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Rendimiento sobre la inversión">
+                            </div>
+                            <button onclick="addPeyeaItem()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Añadir Factor PEYEA
+                            </button>
+                        </div>
+
+                        <!-- Resumen PEYEA por Dimensiones -->
+                        <div class="border border-slate-100 rounded-xl overflow-hidden shadow-sm bg-white">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs">
+                                    <tr>
+                                        <th class="p-4">Dimensión</th>
+                                        <th class="p-4">Factores Evaluados</th>
+                                        <th class="p-4 text-right">Promedio</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr>
+                                        <td class="p-4 font-bold text-brand-primary">Fuerza Financiera (FF)</td>
+                                        <td id="peyea-ff-count" class="p-4 text-slate-500">0 Factores</td>
+                                        <td id="peyea-ff-avg" class="p-4 text-right font-bold text-slate-800">1.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-bold text-teal-600">Fuerza de la Industria (FI)</td>
+                                        <td id="peyea-fi-count" class="p-4 text-slate-500">0 Factores</td>
+                                        <td id="peyea-fi-avg" class="p-4 text-right font-bold text-slate-800">1.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-bold text-red-500">Ventaja Competitiva (VC)</td>
+                                        <td id="peyea-vc-count" class="p-4 text-slate-500">0 Factores</td>
+                                        <td id="peyea-vc-avg" class="p-4 text-right font-bold text-slate-800">-1.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-4 font-bold text-amber-500">Estabilidad del Entorno (EE)</td>
+                                        <td id="peyea-ee-count" class="p-4 text-slate-500">0 Factores</td>
+                                        <td id="peyea-ee-avg" class="p-4 text-right font-bold text-slate-800">-1.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Coordenadas calculadas -->
+                        <div class="p-4 bg-teal-50 border border-teal-200 rounded-xl flex justify-around text-center">
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold block uppercase">Eje X (VC + FI)</span>
+                                <span id="peyea-x-coord" class="text-xl font-black text-slate-800">0.00</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold block uppercase">Eje Y (FF + EE)</span>
+                                <span id="peyea-y-coord" class="text-xl font-black text-slate-800">0.00</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 font-semibold block uppercase">Postura Estratégica</span>
+                                <span id="peyea-posture" class="text-xl font-black text-brand-primary">Equilibrada</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico PEYEA -->
+                    <div class="flex flex-col items-center justify-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Vector PEYEA en el Plano Cartesiano</h3>
+                        <div class="relative w-full max-w-[350px] aspect-square bg-white border border-slate-300 rounded-lg shadow-inner">
+                            <canvas id="peyeaCanvas" width="350" height="350" class="w-full h-full"></canvas>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-4 text-center">El vector resultante indica la recomendación estratégica de la matriz.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. MATRIZ BCG -->
+        <section id="section-bcg" class="tab-content hidden space-y-8 animate-fade-in">
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz de Portafolio BCG (Growth-Share)</h2>
+                        <p class="text-xs text-slate-500">Mapee Unidades Estratégicas de Negocio basadas en crecimiento y cuota relativa de mercado</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Formulario BCG -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 h-fit">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Agregar Unidad Estratégica (UEN)</h3>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-500 mb-1">Nombre de la Unidad / Producto</label>
+                                <input type="text" id="bcg-name" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Servicio Cloud Pro">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-500 mb-1">Ingresos de Ventas Anuales ($)</label>
+                                <input type="number" id="bcg-sales" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 120000">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block font-semibold text-slate-500 mb-1">Cuota Propia (%)</label>
+                                    <input type="number" id="bcg-own-share" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 30">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-500 mb-1">Líder Rival (%)</label>
+                                    <input type="number" id="bcg-comp-share" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 45">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-500 mb-1">Tasa Crecimiento de Industria (%)</label>
+                                <input type="number" id="bcg-growth" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 12">
+                            </div>
+                            <button onclick="addBcgItem()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold transition-all duration-300">
+                                Agregar UEN a BCG
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Unidades & Canvas BCG -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-brand-slate text-white uppercase font-bold">
+                                    <tr>
+                                        <th class="p-3">UEN / Línea</th>
+                                        <th class="p-3">Ventas ($)</th>
+                                        <th class="p-3">Cuota Relativa</th>
+                                        <th class="p-3">Tasa Crec.</th>
+                                        <th class="p-3">Cuadrante</th>
+                                        <th class="p-3 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bcg-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Canvas BCG -->
+                        <div class="flex flex-col items-center justify-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider mb-4">Matriz BCG de Crecimiento-Participación</h3>
+                            <div class="relative w-full max-w-[350px] aspect-square bg-white border border-slate-300 rounded-lg shadow-inner">
+                                <canvas id="bcgCanvas" width="350" height="350" class="w-full h-full"></canvas>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-2 text-center">Las esferas representan el tamaño relativo de ventas de cada UEN en el portafolio.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. MATRIZ MCKINSEY & GRAN ESTRATEGIA -->
+        <section id="section-mckinsey" class="tab-content hidden space-y-8 animate-fade-in">
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="grid" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz McKinsey-GE de Nueve Celdas & Gran Estrategia</h2>
+                        <p class="text-xs text-slate-500">Análisis de portafolio y alineación estratégica de unidades de negocio</p>
+                    </div>
+                </div>
+
+                <!-- OPCIÓN DE VINCULACIÓN CON EFE / EFI -->
+                <div class="mb-6 bg-teal-50 border border-brand-primary/20 p-4 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <i data-lucide="info" class="w-5 h-5 text-brand-primary"></i>
+                        <div>
+                            <span class="font-bold text-xs text-brand-primary block">Sincronización Estratégica Activa</span>
+                            <span class="text-[11px] text-slate-600">Al sincronizar, las coordenadas de McKinsey y la Gran Estrategia se alimentarán directamente del resultado ponderado de EFE (Eje Y) y EFI (Eje X).</span>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="mck-sync-efe-efi" onchange="toggleMckinseySync()" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Configuración de Factores para McKinsey (Ponderaciones manuales opcionales) -->
+                    <div id="mck-manual-container" class="space-y-6 opacity-40 pointer-events-none transition-all duration-300">
+                        <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                            <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Agregar Factor de Portafolio (Manual)</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                <div class="sm:col-span-1">
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Eje McKinsey</label>
+                                    <select id="mck-eje" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none">
+                                        <option value="atractivo">Atractivo de la Industria</option>
+                                        <option value="fuerza">Fuerza Competitiva</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Ponderación (0.0 a 1.0)</label>
+                                    <input type="number" id="mck-weight" step="0.05" min="0" max="1" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 0.15">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Calificación (1 a 5)</label>
+                                    <input type="number" id="mck-rating" min="1" max="5" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="1 al 5">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Factor Evaluado</label>
+                                <input type="text" id="mck-factor" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Cuota de mercado o Crecimiento anual">
+                            </div>
+                            <button onclick="addMckinseyItem()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar Factor a McKinsey
+                            </button>
+                        </div>
+
+                        <!-- Tabla de Factores -->
+                        <div class="border border-slate-100 rounded-xl overflow-hidden bg-white max-h-[250px] overflow-y-auto shadow-sm">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-brand-slate text-white text-xs uppercase">
+                                    <tr>
+                                        <th class="p-3">Eje</th>
+                                        <th class="p-3">Factor</th>
+                                        <th class="p-3">Peso</th>
+                                        <th class="p-3">Calificación</th>
+                                        <th class="p-3">Pond.</th>
+                                        <th class="p-3 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mck-table-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Indicadores de Coordenadas de Mapeo -->
+                    <div class="space-y-6 flex flex-col justify-between">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase block">Atractivo Industria (Eje Y)</span>
+                                <span id="mck-atractivo-score" class="text-2xl font-black text-brand-primary">1.00</span>
+                                <p class="text-[10px] text-slate-400 mt-1" id="mck-y-source">Alimentado por EFE</p>
+                            </div>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase block">Fuerza Competitiva (Eje X)</span>
+                                <span id="mck-fuerza-score" class="text-2xl font-black text-teal-600">1.00</span>
+                                <p class="text-[10px] text-slate-400 mt-1" id="mck-x-source">Alimentado por EFI</p>
+                            </div>
+                        </div>
+
+                        <!-- Visualización del Cuadrante Gran Estrategia -->
+                        <div class="flex flex-col items-center justify-center bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                            <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Matriz de la Gran Estrategia (4 Cuadrantes)</h3>
+                            <div class="relative w-full max-w-[300px] aspect-square bg-white border border-slate-300 rounded-lg shadow-inner">
+                                <canvas id="grandStrategyCanvas" width="300" height="300" class="w-full h-full"></canvas>
+                            </div>
+                            <p class="text-[10px] text-slate-400 mt-2 text-center">Eje X: Posición Competitiva (EFI) | Eje Y: Crecimiento de la Industria (EFE)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. MATRIZ CUANTITATIVA (MCPE) -->
+        <section id="section-mcpe" class="tab-content hidden space-y-8 animate-fade-in">
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex items-center space-x-3 mb-6 border-b border-slate-100 pb-4">
+                    <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                        <i data-lucide="file-spreadsheet" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Matriz Cuantitativa de Planificación Estratégica (MCPE)</h2>
+                        <p class="text-xs text-slate-500">Agregue múltiples estrategias y califíquelas sobre sus factores para determinar la alternativa ganadora</p>
+                    </div>
+                </div>
+
+                <!-- Configuración MCPE (Estrategias y Factores) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Registrar Estrategia Alternativa -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 col-span-1">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Registrar Nueva Estrategia</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre de la Estrategia</label>
+                                <input type="text" id="mcpe-strategy-name" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Penetración de mercado digital">
+                            </div>
+                            <button onclick="addMcpeStrategy()" class="w-full py-2.5 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar Estrategia
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Registrar Factor Crítico de Éxito -->
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 col-span-1">
+                        <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-3">Registrar Factor Crítico</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Descripción del Factor</label>
+                                <input type="text" id="mcpe-factor-name" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Capacidad tecnológica instalada">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Ponderación / Peso (0.01 a 1.0) </label>
+                                <input type="number" id="mcpe-factor-weight" step="0.05" min="0" max="1" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 0.10">
+                            </div>
+                            <button onclick="addMcpeFactor()" class="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-sm transition-all duration-300">
+                                Agregar Factor a MCPE
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Widget del Ganador -->
+                    <div class="bg-gradient-to-tr from-brand-slate to-brand-deep rounded-xl p-5 text-white flex flex-col justify-between">
+                        <div>
+                            <span class="bg-brand-accent text-white text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider">Alternativa Recomendada</span>
+                            <h4 id="mcpe-winner-title" class="text-lg font-bold mt-3 leading-snug">Cargando análisis estratégico...</h4>
+                        </div>
+                        <div class="mt-4 border-t border-slate-700 pt-3 flex justify-between items-center">
+                            <span class="text-xs text-slate-400">Puntaje de Atractivo Total:</span>
+                            <span id="mcpe-winner-score" class="text-lg font-black text-brand-accent">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matriz de Calificaciones Dinámica -->
+                <div class="bg-white border border-brand-border rounded-xl shadow-sm overflow-x-auto">
+                    <table class="w-full min-w-[700px] text-sm text-left">
+                        <thead class="bg-brand-slate text-white text-xs uppercase">
+                            <tr id="mcpe-header-row">
+                                <th class="p-4 rounded-tl-xl w-[250px]">Factores Críticos de Éxito</th>
+                                <th class="p-4 w-[100px]">Peso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mcpe-body-rows" class="divide-y divide-slate-100 bg-white"></tbody>
+                        <tfoot id="mcpe-footer-row" class="bg-slate-50 font-extrabold text-brand-deep border-t-2 border-slate-200"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. PLAN OPERATIVO ANUAL (POA) & KPIs -->
+        <section id="section-poa" class="tab-content hidden space-y-8 animate-fade-in">
+            <!-- POA TABLE CARD -->
+            <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2.5 bg-teal-50 text-brand-primary rounded-xl">
+                            <i data-lucide="calendar-range" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold">Plan Operativo Anual (POA)</h2>
+                            <p class="text-xs text-slate-500">Formulación táctica con objetivos, metas, presupuestos y control de actividades</p>
+                        </div>
+                    </div>
+                    <button onclick="togglePoaForm()" class="mt-3 md:mt-0 flex items-center space-x-2 px-4 py-2 bg-brand-primary hover:bg-brand-secondary text-white rounded-lg font-semibold text-sm transition-all duration-300 shadow">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Nueva Actividad POA</span>
+                    </button>
+                </div>
+
+                <!-- FORMULARIO POA -->
+                <div id="poa-form-container" class="hidden mb-8 bg-slate-50 border border-slate-200 rounded-xl p-5 animate-fade-in">
+                    <h3 class="font-bold text-sm text-slate-700 uppercase tracking-wider mb-4">Ingreso de Datos de Planificación Operativa</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Objetivo Estratégico</label>
+                            <input type="text" id="poa-obj" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Incrementar rentabilidad digital">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Estrategia Relacionada</label>
+                            <input type="text" id="poa-est" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Lanzar nueva plataforma e-commerce">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Actividad / Acción</label>
+                            <input type="text" id="poa-act" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Desarrollo front-end y pasarela">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Meta Cuantitativa</label>
+                            <input type="text" id="poa-meta" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 10,000 transacciones">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nombre KPI</label>
+                            <input type="text" id="poa-kpi" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. % Tasa conversión">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Línea Base (%)</label>
+                            <input type="number" id="poa-base" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 25">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Meta Deseada (%)</label>
+                            <input type="number" id="poa-target" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 90">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Presupuesto ($)</label>
+                            <input type="number" id="poa-budget" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 5000">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Responsable</label>
+                            <input type="text" id="poa-owner" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. Gerente TI">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Avance Actual (%)</label>
+                            <input type="number" id="poa-prog" min="0" max="100" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Ej. 40">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button onclick="togglePoaForm()" class="px-4 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-200 rounded-lg transition-all">Cancelar</button>
+                        <button onclick="addPoaRow()" class="px-5 py-2 text-xs font-semibold text-white bg-brand-primary hover:bg-brand-secondary rounded-lg transition-all shadow">Guardar Fila POA</button>
+                    </div>
+                </div>
+
+                <!-- POA INTERACTIVE TABLE -->
+                <div class="overflow-x-auto border border-slate-100 rounded-xl shadow-inner bg-white">
+                    <table class="w-full min-w-[1100px] text-left text-sm">
+                        <thead class="bg-brand-slate text-white text-xs uppercase">
+                            <tr>
+                                <th class="p-3 rounded-tl-xl">Objetivo</th>
+                                <th class="p-3">Estrategia</th>
+                                <th class="p-3">Actividad/Acción</th>
+                                <th class="p-3">Meta</th>
+                                <th class="p-3">KPI</th>
+                                <th class="p-3 text-center">Línea Base</th>
+                                <th class="p-3 text-center">Meta Target</th>
+                                <th class="p-3 text-center">Presupuesto</th>
+                                <th class="p-3">Responsable</th>
+                                <th class="p-3 text-center" style="width: 140px;">Avance (%)</th>
+                                <th class="p-3 rounded-tr-xl text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="poa-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- KPI PERFORMANCE GAUGE AND TRACKING CHART -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Selector e Ingreso Rápido de KPI -->
+                <div class="bg-white rounded-2xl border border-brand-border p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-extrabold text-base mb-4 flex items-center space-x-2 text-slate-800">
+                            <i data-lucide="bar-chart-2" class="w-5 h-5 text-brand-primary"></i>
+                            <span>Consola de KPIs Directiva</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mb-4">Seleccione cualquier KPI para actualizar el progreso y analizar su avance gráfico.</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Seleccionar Indicador</label>
+                                <select id="kpi-selector" onchange="loadSelectedKpi()" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Actualizar Avance de este KPI (%)</label>
+                                <div class="flex space-x-2">
+                                    <input type="number" id="kpi-current-value" min="0" max="100" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:ring-2 focus:ring-brand-primary outline-none" placeholder="Avance">
+                                    <button onclick="updateKpiValue()" class="px-4 py-2 bg-brand-primary hover:bg-brand-secondary text-white font-bold text-sm rounded-lg transition-all shadow">
+                                        Actualizar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 border-t border-slate-100 pt-4">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>Estado de KPI Actual:</span>
+                            <span id="kpi-status-badge" class="font-bold text-brand-success px-2 py-0.5 rounded-full bg-emerald-50">Óptimo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Visualizer (Gauge & Trend) -->
+                <div class="lg:col-span-2 bg-white rounded-2xl border border-brand-border p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-extrabold text-base mb-2 flex items-center space-x-2 text-slate-800">
+                            <i data-lucide="activity" class="w-5 h-5 text-brand-success"></i>
+                            <span id="kpi-display-title">Visualización Dinámica del Avance</span>
+                        </h3>
+                        <p id="kpi-display-meta" class="text-xs text-slate-500 mb-4">Visualizando meta frente al porcentaje de avance actual.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                        <!-- Barra/Anillo de Progreso -->
+                        <div class="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Progreso Alcanzado</span>
+                            <div class="relative w-36 h-36 flex items-center justify-center">
+                                <svg class="w-full h-full transform -rotate-90">
+                                    <circle cx="72" cy="72" r="58" stroke="#E2E8F0" stroke-width="12" fill="transparent" />
+                                    <circle cx="72" cy="72" r="58" stroke="#0D9488" stroke-width="12" fill="transparent" stroke-dasharray="364.4" id="kpi-progress-circle" />
+                                </svg>
+                                <div class="absolute text-center">
+                                    <span id="kpi-percentage-text" class="text-3xl font-black text-slate-800">0%</span>
+                                    <p class="text-[10px] text-slate-400 font-semibold uppercase">Completado</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico Lineal de la Tendencia -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 h-44 flex flex-col justify-between">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Comportamiento vs. Línea Base</span>
+                            <div class="flex-grow flex items-end justify-between px-2 h-24">
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="w-4 bg-slate-200 rounded-t h-[40%]" id="kpi-bar-base" style="height: 40%"></div>
+                                    <span class="text-[10px] text-slate-400 mt-1 font-semibold">L. Base</span>
+                                </div>
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="w-4 bg-brand-primary rounded-t" id="kpi-bar-actual" style="height: 0%"></div>
+                                    <span class="text-[10px] text-slate-400 mt-1 font-semibold">Avance</span>
+                                </div>
+                                <div class="flex flex-col items-center flex-1">
+                                    <div class="w-4 bg-brand-accent rounded-t h-[100%]" id="kpi-bar-target" style="height: 100%"></div>
+                                    <span class="text-[10px] text-slate-400 mt-1 font-semibold">Meta Target</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER CORPORATIVO -->
+    <footer class="bg-brand-deep text-slate-400 text-xs py-6 border-t border-brand-slate mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between">
+            <p>&copy; 2026 VoltEcuador. Todos los derechos reservados. Planificación Estratégica Corporativa.</p>
+            <div class="flex space-x-4 mt-3 sm:mt-0">
+                <span class="hover:text-white cursor-pointer transition-colors">Seguridad de Datos</span>
+                <span>&bull;</span>
+                <span class="hover:text-white cursor-pointer transition-colors">Soporte Técnico</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- LOGIC SYSTEM & DATA CONTROLLER (CON LOCAL STORAGE INTACTO) -->
+    <script>
+        // ===STATE_HOLDER_START===
+        const DEFAULT_STATE = {
+            pestel: [
+                { id: "1", dimension: "Político", desc: "Elecciones presidenciales y legislativas en Ecuador", impacto: "Alto", tipo: "Amenaza" },
+                { id: "2", dimension: "Económico", desc: "Aumento de inversión extranjera directa en tecnologías limpias", impacto: "Medio", tipo: "Oportunidad" },
+                { id: "3", dimension: "Tecnológico", desc: "Expansión de redes de fibra óptica y conectividad satelital rural", impacto: "Alto", tipo: "Oportunidad" }
+            ],
+            porter: [
+                { id: "1", fuerza: "Rivalidad de Competidores", desc: "Guerra de precios agresiva con nuevos proveedores logísticos", nivel: "Alto" },
+                { id: "2", fuerza: "Nuevos Competidores", desc: "Barreras de entrada altas debido a regulaciones de telecomunicaciones", nivel: "Bajo" },
+                { id: "3", fuerza: "Poder de Proveedores", desc: "Proveedores clave exclusivos de equipamiento electrónico", nivel: "Alto" }
+            ],
+            efe: [
+                { id: "efe_1", tipo: "Oportunidad", factor: "Crecimiento de la demanda de servicios en la nube en Ecuador", peso: 0.25, calificacion: 4 },
+                { id: "efe_2", tipo: "Oportunidad", factor: "Alianzas tecnológicas de fomento digital del gobierno", peso: 0.20, calificacion: 3 },
+                { id: "efe_3", tipo: "Amenaza", factor: "Inestabilidad regulatoria y de tarifas de energía", peso: 0.30, calificacion: 2 },
+                { id: "efe_4", tipo: "Amenaza", factor: "Entrada acelerada de competidores internacionales", peso: 0.25, calificacion: 3 }
+            ],
+            efi: [
+                { id: "efi_1", tipo: "Fortaleza", factor: "Equipo de ingeniería altamente calificado y certificado", peso: 0.30, calificacion: 4 },
+                { id: "efi_2", tipo: "Fortaleza", factor: "Estructura de costos optimizada frente a rivales locales", peso: 0.20, calificacion: 3 },
+                { id: "efi_3", tipo: "Debilidad", factor: "Bajo presupuesto inicial de marketing y promoción", peso: 0.25, calificacion: 2 },
+                { id: "efi_4", tipo: "Debilidad", factor: "Dependencia de un único proveedor de hardware clave", peso: 0.25, calificacion: 1 }
+            ],
+            peyea: [
+                { id: "1", dim: "FF", factor: "Retorno sobre la Inversión (ROI)", score: 5 },
+                { id: "2", dim: "FF", factor: "Liquidez y flujo de caja operativo", score: 4 },
+                { id: "3", dim: "FI", factor: "Potencial de crecimiento del mercado digital", score: 5 },
+                { id: "4", dim: "FI", factor: "Estabilidad financiera del sector", score: 4 },
+                { id: "5", dim: "VC", factor: "Participación en el mercado ecuatoriano", score: -2 },
+                { id: "6", dim: "VC", factor: "Fidelidad de la cartera corporativa", score: -3 },
+                { id: "7", dim: "EE", factor: "Tasa de inflación nacional", score: -4 },
+                { id: "8", dim: "EE", factor: "Variabilidad cíclica de la demanda", score: -3 }
+            ],
+            bcg: [
+                { id: "bcg_1", name: "Servicios Cloud Enterprise", sales: 150000, ownShare: 35, compShare: 45, growth: 15 },
+                { id: "bcg_2", name: "Soporte de Infraestructura Fija", sales: 80000, ownShare: 55, compShare: 20, growth: 3 },
+                { id: "bcg_3", name: "Consultorías DevOps Especializadas", sales: 45000, ownShare: 10, compShare: 50, growth: 18 },
+                { id: "bcg_4", name: "Licenciamiento Antiguo Legacy", sales: 25000, ownShare: 12, compShare: 40, growth: 2 }
+            ],
+            mckinsey_sync: true,
+            mckinsey: [
+                { id: "1", eje: "atractivo", factor: "Crecimiento proyectado de la industria de software", weight: 0.5, rating: 5 },
+                { id: "2", eje: "atractivo", factor: "Rentabilidad promedio de los competidores", weight: 0.5, rating: 4 },
+                { id: "3", eje: "fuerza", factor: "Fuerza de marca VoltEcuador", weight: 0.6, rating: 5 },
+                { id: "4", eje: "fuerza", factor: "Capacidades de servicio técnico", weight: 0.4, rating: 3 }
+            ],
+            tows: [
+                { id: "t_1", cuadrante: "FO", desc: "Aprovechar las certificaciones del equipo (F1) para liderar la adopción en la nube del sector (O1)" },
+                { id: "t_2", cuadrante: "DO", desc: "Destinar la rentabilidad generada de las alianzas gubernamentales (O2) para potenciar el presupuesto de marketing (D1)" },
+                { id: "t_3", cuadrante: "FA", desc: "Apalancar la estructura eficiente de costos (F2) para repeler la guerra de precios de multinacionales (A2)" },
+                { id: "t_4", cuadrante: "DA", desc: "Diversificar la cartera de distribuidores de hardware (D2) para atenuar riesgos en los costos de importación arancelarios (A1)" }
+            ],
+            mcpe_factors: [
+                { id: "f1", desc: "Capacidad de personal técnico calificado", weight: 0.30 },
+                { id: "f2", desc: "Inversión requerida e infraestructura física", weight: 0.40 },
+                { id: "f3", desc: "Alineación con regulaciones del Mintel", weight: 0.30 }
+            ],
+            mcpe_strategies: [
+                { id: "s1", name: "Estrategia de Expansión Cloud SaaS", scores: { "f1": 4, "f2": 2, "f3": 4 } },
+                { id: "s2", name: "Estrategia de Apertura de Centros de Soporte Físico", scores: { "f1": 3, "f2": 4, "f3": 2 } }
+            ],
+            poa: [
+                { id: "1", obj: "Incrementar ventas corporativas", est: "Digitalización multicanal", act: "Campaña de embudo SEM enfocada a tomadores de decisión", meta: "Capturar 200 leads", kpi: "Leads Mensuales", base: 15, target: 85, budget: 3500, owner: "Área de Marketing", prog: 50 },
+                { id: "2", obj: "Fortalecer la estabilidad de red", est: "Optimización tecnológica", act: "Migrar servidores críticos a arquitectura híbrida redundante", meta: "Reducir latencia general", kpi: "Tasa de Latencia", base: 30, target: 95, budget: 8500, owner: "Dpt. Infraestructura", prog: 80 }
+            ]
+        };
+        // ===STATE_HOLDER_END===
+
+        let state = {};
+
+        // NOTIFICACIONES PREMIUM TOAST
+        function showToast(message, type = 'success') {
+            const container = document.getElementById("toast-container");
+            if (!container) return;
+            const toast = document.createElement("div");
+            toast.className = "flex items-center space-x-3 p-4 rounded-xl shadow-lg border text-xs font-semibold transform translate-y-2 opacity-0 transition-all duration-300 " + 
+                (type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-red-50 border-red-200 text-red-800');
+            
+            const icon = type === 'success' ? 'check-circle' : 'alert-triangle';
+            toast.innerHTML = `
+                <i data-lucide="${icon}" class="w-4 h-4 shrink-0"></i>
+                <div class="flex-1">${message}</div>
+                <button class="text-slate-400 hover:text-slate-600 font-bold ml-2 text-sm" onclick="this.parentElement.remove()">×</button>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-2", "opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // EXPORTACIÓN A HTML AUTÓNOMO (Inyectando los datos actuales en el estado por defecto)
+        function exportStandAloneHTML() {
+            try {
+                // Serializamos el estado actual
+                const stateString = JSON.stringify(state, null, 4);
+
+                // Clonamos o extraemos el HTML actual de la página
+                let originalHtml = document.documentElement.outerHTML;
+
+                // Localizamos las marcas de inicio y fin del contenedor del estado por defecto
+                const startMarker = "// ===STATE_HOLDER_START===";
+                const endMarker = "// ===STATE_HOLDER_END===";
+
+                const startIndex = originalHtml.indexOf(startMarker);
+                const endIndex = originalHtml.indexOf(endMarker);
+
+                if (startIndex === -1 || endIndex === -1) {
+                    showToast("No se pudo estructurar el motor de inyección de datos.", "error");
+                    return;
+                }
+
+                // Generamos la nueva declaración de bloque de datos
+                const replacementBlock = `${startMarker}\n        const DEFAULT_STATE = ${stateString};\n        ${endMarker}`;
+
+                // Realizamos el reemplazo de forma segura
+                const beforeBlock = originalHtml.substring(0, startIndex);
+                const afterBlock = originalHtml.substring(endIndex + endMarker.length);
+                const exportedHtmlContent = `<!DOCTYPE html>\n` + beforeBlock + replacementBlock + afterBlock;
+
+                // Forzamos la descarga del archivo binario / texto
+                const blob = new Blob([exportedHtmlContent], { type: "text/html;charset=utf-8" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = "VoltEcuador_Dashboard_Estrategico_Unificado.html";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                showToast("¡Dashboard estratégico exportado exitosamente como archivo HTML autónomo!");
+            } catch (err) {
+                showToast("Fallo al exportar el archivo: " + err.message, "error");
+            }
+        }
+
+        // INICIALIZADOR DE PLATAFORMA
+        window.onload = function() {
+            loadState();
+            renderAll();
+            drawPeyeaPlano();
+            drawBcgMatrix();
+            drawGrandStrategy();
+        };
+
+        // GESTIÓN DE LOCAL STORAGE
+        function saveState() {
+            localStorage.setItem("voltecuador_state", JSON.stringify(state));
+            updateDashboardMetrics();
+        }
+
+        function loadState() {
+            const raw = localStorage.getItem("voltecuador_state");
+            if (raw) {
+                try {
+                    state = JSON.parse(raw);
+                    // Comprobación de integridad para añadir nuevos arrays por si existía versión previa
+                    if (!state.efe) state.efe = JSON.parse(JSON.stringify(DEFAULT_STATE.efe));
+                    if (!state.efi) state.efi = JSON.parse(JSON.stringify(DEFAULT_STATE.efi));
+                    if (!state.tows) state.tows = JSON.parse(JSON.stringify(DEFAULT_STATE.tows));
+                    if (!state.bcg) state.bcg = JSON.parse(JSON.stringify(DEFAULT_STATE.bcg));
+                    if (state.mckinsey_sync === undefined) state.mckinsey_sync = true;
+                } catch (e) {
+                    state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+                }
+            } else {
+                state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            }
+        }
+
+        function resetAllData() {
+            state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            saveState();
+            renderAll();
+            drawPeyeaPlano();
+            drawBcgMatrix();
+            drawGrandStrategy();
+            showToast("Plataforma estratégica restablecida a los valores iniciales de fábrica.");
+        }
+
+        function loadSampleData() {
+            state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            saveState();
+            renderAll();
+            drawPeyeaPlano();
+            drawBcgMatrix();
+            drawGrandStrategy();
+            showToast("Ejemplo demostrativo cargado correctamente.");
+        }
+
+        // CONTROL DE TABS
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-content").forEach(sec => sec.classList.add("hidden"));
+            document.getElementById("section-" + tabId).classList.remove("hidden");
+
+            document.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.className = "nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all duration-300 shrink-0";
+            });
+
+            const activeBtn = document.getElementById("btn-" + tabId);
+            if (activeBtn) {
+                activeBtn.className = "nav-btn flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-300 bg-brand-primary text-white shadow-md shrink-0";
+            }
+
+            // Forzar repintados de canvases sobre tabs activados
+            if (tabId === 'peyea') {
+                setTimeout(drawPeyeaPlano, 50);
+            } else if (tabId === 'bcg') {
+                setTimeout(drawBcgMatrix, 50);
+            } else if (tabId === 'mckinsey') {
+                setTimeout(drawGrandStrategy, 50);
+            }
+        }
+
+        // RENDER GENERAL DEL SISTEMA
+        function renderAll() {
+            renderPestel();
+            renderPorter();
+            renderFodaGrid();
+            renderEfeEfiTables();
+            renderPeyeaMetrics();
+            renderBcgTable();
+            renderMckinsey();
+            renderMcpe();
+            renderPoaTable();
+            renderKpiSection();
+            updateDashboardMetrics();
+            lucide.createIcons();
+        }
+
+        // --- SISTEMA 1: PESTEL CONTROLLER ---
+        function renderPestel() {
+            const body = document.getElementById("pestel-table-body");
+            if (!body) return;
+            body.innerHTML = "";
+            state.pestel.forEach(item => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50";
+                
+                let impactColor = "bg-yellow-100 text-yellow-800";
+                if (item.impacto === "Alto") impactColor = "bg-red-100 text-red-800";
+                if (item.impacto === "Bajo") impactColor = "bg-emerald-100 text-emerald-800";
+
+                let typeColor = "text-emerald-600 font-semibold";
+                if (item.tipo === "Amenaza") typeColor = "text-rose-600 font-semibold";
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800 text-xs">${item.dimension}</td>
+                    <td class="p-4 text-slate-600 max-w-xs truncate text-xs" title="${item.desc}">${item.desc}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${impactColor}">${item.impacto}</span></td>
+                    <td class="p-4 text-xs ${typeColor}">${item.tipo}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deletePestel('${item.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">Eliminar</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function addPestelItem() {
+            const dimension = document.getElementById("pestel-dimension").value;
+            const desc = document.getElementById("pestel-desc").value.trim();
+            const impacto = document.getElementById("pestel-impacto").value;
+            const tipo = document.getElementById("pestel-tipo").value;
+
+            if (!desc) {
+                showToast("Por favor escriba el factor de análisis.", "error");
+                return;
+            }
+
+            state.pestel.push({
+                id: Date.now().toString(),
+                dimension,
+                desc,
+                impacto,
+                tipo
+            });
+            saveState();
+            renderPestel();
+            renderFodaGrid(); // Actualizar FODA ya que se auto-abastece
+            document.getElementById("pestel-desc").value = "";
+            showToast("Factor PESTEL incorporado.");
+        }
+
+        function deletePestel(id) {
+            state.pestel = state.pestel.filter(x => x.id !== id);
+            saveState();
+            renderPestel();
+            renderFodaGrid();
+            showToast("Factor PESTEL eliminado.");
+        }
+
+        // --- SISTEMA 2: PORTER CONTROLLER ---
+        function renderPorter() {
+            const body = document.getElementById("porter-table-body");
+            if (!body) return;
+            body.innerHTML = "";
+            state.porter.forEach(item => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50";
+
+                let lvlColor = "bg-yellow-100 text-yellow-800";
+                if (item.nivel === "Alto") lvlColor = "bg-red-100 text-red-800";
+                if (item.nivel === "Bajo") lvlColor = "bg-emerald-100 text-emerald-800";
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-slate-800 text-xs">${item.fuerza}</td>
+                    <td class="p-4 text-slate-600 max-w-xs truncate text-xs" title="${item.desc}">${item.desc}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${lvlColor}">${item.nivel}</span></td>
+                    <td class="p-4 text-center">
+                        <button onclick="deletePorter('${item.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">Eliminar</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function addPorterItem() {
+            const fuerza = document.getElementById("porter-fuerza").value;
+            const desc = document.getElementById("porter-desc").value.trim();
+            const nivel = document.getElementById("porter-nivel").value;
+
+            if (!desc) {
+                showToast("Por favor describa el factor de Porter.", "error");
+                return;
+            }
+
+            state.porter.push({
+                id: Date.now().toString(),
+                fuerza,
+                desc,
+                nivel
+            });
+            saveState();
+            renderPorter();
+            document.getElementById("porter-desc").value = "";
+            showToast("Factor de Porter incorporado.");
+        }
+
+        function deletePorter(id) {
+            state.porter = state.porter.filter(x => x.id !== id);
+            saveState();
+            renderPorter();
+            showToast("Factor de Porter eliminado.");
+        }
+
+        // --- SISTEMA 3: MATRIZ DE ANÁLISIS FODA & FODA CRUZADO (TOWS) ---
+        function renderFodaGrid() {
+            const fList = document.getElementById("foda-fortalezas-list");
+            const dList = document.getElementById("foda-debilidades-list");
+            const oList = document.getElementById("foda-oportunidades-list");
+            const aList = document.getElementById("foda-amenazas-list");
+
+            if (!fList || !dList || !oList || !aList) return;
+
+            fList.innerHTML = "";
+            dList.innerHTML = "";
+            oList.innerHTML = "";
+            aList.innerHTML = "";
+
+            // Alimentación dinámica desde EFI y EFE
+            state.efi.filter(x => x.tipo === "Fortaleza").forEach((item, i) => {
+                fList.innerHTML += `<li class="bg-white p-2 rounded-lg border border-teal-100 shadow-sm flex items-start space-x-1"><span class="font-bold text-teal-600">F${i+1}.</span><span class="text-slate-700">${item.factor}</span></li>`;
+            });
+            state.efi.filter(x => x.tipo === "Debilidad").forEach((item, i) => {
+                dList.innerHTML += `<li class="bg-white p-2 rounded-lg border border-red-100 shadow-sm flex items-start space-x-1"><span class="font-bold text-red-500">D${i+1}.</span><span class="text-slate-700">${item.factor}</span></li>`;
+            });
+            state.efe.filter(x => x.tipo === "Oportunidad").forEach((item, i) => {
+                oList.innerHTML += `<li class="bg-white p-2 rounded-lg border border-emerald-100 shadow-sm flex items-start space-x-1"><span class="font-bold text-emerald-600">O${i+1}.</span><span class="text-slate-700">${item.factor}</span></li>`;
+            });
+            state.efe.filter(x => x.tipo === "Amenaza").forEach((item, i) => {
+                aList.innerHTML += `<li class="bg-white p-2 rounded-lg border border-amber-100 shadow-sm flex items-start space-x-1"><span class="font-bold text-amber-600">A${i+1}.</span><span class="text-slate-700">${item.factor}</span></li>`;
+            });
+
+            // Si está vacío, mostrar mensaje amigable
+            if (fList.innerHTML === "") fList.innerHTML = `<li class="text-slate-400 italic">No hay fortalezas cargadas en la matriz EFI.</li>`;
+            if (dList.innerHTML === "") dList.innerHTML = `<li class="text-slate-400 italic">No hay debilidades cargadas en la matriz EFI.</li>`;
+            if (oList.innerHTML === "") oList.innerHTML = `<li class="text-slate-400 italic">No hay oportunidades cargadas en la matriz EFE.</li>`;
+            if (aList.innerHTML === "") aList.innerHTML = `<li class="text-slate-400 italic">No hay amenazas cargadas en la matriz EFE.</li>`;
+
+            // Renderizar listados de FODA Cruzado (TOWS)
+            renderTowsListings();
+        }
+
+        function addTowsStrategy() {
+            const cuadrante = document.getElementById("tows-cuadrante").value;
+            const desc = document.getElementById("tows-desc").value.trim();
+
+            if (!desc) {
+                showToast("Por favor introduzca la descripción de la estrategia TOWS.", "error");
+                return;
+            }
+
+            state.tows.push({
+                id: "tows_" + Date.now().toString(),
+                cuadrante,
+                desc
+            });
+
+            saveState();
+            renderTowsListings();
+            document.getElementById("tows-desc").value = "";
+            showToast("Iniciativa estratégica TOWS registrada.");
+        }
+
+        function deleteTowsStrategy(id) {
+            state.tows = state.tows.filter(x => x.id !== id);
+            saveState();
+            renderTowsListings();
+            showToast("Estrategia TOWS eliminada.");
+        }
+
+        function renderTowsListings() {
+            const quadrants = { FO: "tows-fo-list", DO: "tows-do-list", FA: "tows-fa-list", DA: "tows-da-list" };
+            
+            // Limpiar
+            Object.values(quadrants).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = "";
+            });
+
+            // Poblar
+            state.tows.forEach((item, idx) => {
+                const listId = quadrants[item.cuadrante];
+                const listContainer = document.getElementById(listId);
+                if (listContainer) {
+                    const li = document.createElement("li");
+                    li.className = "py-2.5 flex items-start justify-between space-x-2 text-xs font-medium text-slate-700";
+                    li.innerHTML = `
+                        <div class="flex items-start space-x-1">
+                            <span class="text-slate-400 font-bold">#${idx+1}</span>
+                            <span>${item.desc}</span>
+                        </div>
+                        <button onclick="deleteTowsStrategy('${item.id}')" class="text-red-500 hover:text-red-700 font-bold shrink-0">×</button>
+                    `;
+                    listContainer.appendChild(li);
+                }
+            });
+
+            // Indicadores de vacíos
+            Object.entries(quadrants).forEach(([quadKey, listId]) => {
+                const container = document.getElementById(listId);
+                if (container && container.innerHTML === "") {
+                    container.innerHTML = `<li class="text-slate-400 italic py-2 text-center">Sin estrategias ${quadKey} formuladas aún.</li>`;
+                }
+            });
+        }
+
+
+        // --- SISTEMA 4: MATRICES DE FACTORES EFE & EFI ---
+        function renderEfeEfiTables() {
+            // RENDER EFE (Externa)
+            const efeBody = document.getElementById("efe-table-body");
+            if (efeBody) {
+                efeBody.innerHTML = "";
+                let efeWeightTotal = 0;
+                let efeWeightedTotal = 0;
+
+                state.efe.forEach(item => {
+                    const weighted = item.peso * item.calificacion;
+                    efeWeightTotal += item.peso;
+                    efeWeightedTotal += weighted;
+
+                    const tr = document.createElement("tr");
+                    tr.className = "hover:bg-slate-50 text-xs";
+                    const typeBadge = item.tipo === "Oportunidad" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800";
+
+                    tr.innerHTML = `
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${typeBadge}">${item.tipo}</span></td>
+                        <td class="p-3 text-slate-600 font-medium">${item.factor}</td>
+                        <td class="p-3 text-slate-800 font-bold">${item.peso.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-center">${item.calificacion}</td>
+                        <td class="p-3 text-brand-primary font-black">${weighted.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteEfeItem('${item.id}')" class="text-red-500 hover:text-red-700 font-semibold">Eliminar</button>
+                        </td>
+                    `;
+                    efeBody.appendChild(tr);
+                });
+
+                const efeWtEl = document.getElementById("efe-weight-total");
+                const efeWtdEl = document.getElementById("efe-weighted-total");
+                const dashEfeEl = document.getElementById("dash-efe-score");
+
+                if (efeWtEl) efeWtEl.innerText = efeWeightTotal.toFixed(2);
+                if (efeWtdEl) efeWtdEl.innerText = efeWeightedTotal.toFixed(2);
+                if (dashEfeEl) dashEfeEl.innerText = efeWeightedTotal.toFixed(2);
+
+                const efeWarning = document.getElementById("efe-weight-warning");
+                if (efeWarning) {
+                    if (Math.abs(efeWeightTotal - 1.0) > 0.01 && state.efe.length > 0) {
+                        efeWarning.innerText = `Atención: La suma de pesos de la matriz EFE debe ser igual a 1.00 (Actual: ${efeWeightTotal.toFixed(2)})`;
+                        efeWarning.classList.remove("hidden");
+                    } else {
+                        efeWarning.classList.add("hidden");
+                    }
+                }
+            }
+
+            // RENDER EFI (Interna)
+            const efiBody = document.getElementById("efi-table-body");
+            if (efiBody) {
+                efiBody.innerHTML = "";
+                let efiWeightTotal = 0;
+                let efiWeightedTotal = 0;
+
+                state.efi.forEach(item => {
+                    const weighted = item.peso * item.calificacion;
+                    efiWeightTotal += item.peso;
+                    efiWeightedTotal += weighted;
+
+                    const tr = document.createElement("tr");
+                    tr.className = "hover:bg-slate-50 text-xs";
+                    const typeBadge = item.tipo === "Fortaleza" ? "bg-teal-100 text-teal-800" : "bg-rose-100 text-rose-800";
+
+                    tr.innerHTML = `
+                        <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${typeBadge}">${item.tipo}</span></td>
+                        <td class="p-3 text-slate-600 font-medium">${item.factor}</td>
+                        <td class="p-3 text-slate-800 font-bold">${item.peso.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-center">${item.calificacion}</td>
+                        <td class="p-3 text-indigo-600 font-black">${weighted.toFixed(2)}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteEfiItem('${item.id}')" class="text-red-500 hover:text-red-700 font-semibold">Eliminar</button>
+                        </td>
+                    `;
+                    efiBody.appendChild(tr);
+                });
+
+                const efiWtEl = document.getElementById("efi-weight-total");
+                const efiWtdEl = document.getElementById("efi-weighted-total");
+                const dashEfiEl = document.getElementById("dash-efi-score");
+
+                if (efiWtEl) efiWtEl.innerText = efiWeightTotal.toFixed(2);
+                if (efiWtdEl) efiWtdEl.innerText = efiWeightedTotal.toFixed(2);
+                if (dashEfiEl) dashEfiEl.innerText = efiWeightedTotal.toFixed(2);
+
+                const efiWarning = document.getElementById("efi-weight-warning");
+                if (efiWarning) {
+                    if (Math.abs(efiWeightTotal - 1.0) > 0.01 && state.efi.length > 0) {
+                        efiWarning.innerText = `Atención: La suma de pesos de la matriz EFI debe ser igual a 1.00 (Actual: ${efiWeightTotal.toFixed(2)})`;
+                        efiWarning.classList.remove("hidden");
+                    } else {
+                        efiWarning.classList.add("hidden");
+                    }
+                }
+            }
+
+            // Si está activa la sincronización, forzar recálculo en McKinsey y la Gran Estrategia
+            if (state.mckinsey_sync) {
+                renderMckinsey();
+                drawGrandStrategy();
+            }
+        }
+
+        function addEfeItem() {
+            const tipo = document.getElementById("efe-tipo").value;
+            const factor = document.getElementById("efe-factor").value.trim();
+            const peso = parseFloat(document.getElementById("efe-peso").value);
+            const calificacion = parseInt(document.getElementById("efe-calif").value);
+
+            if (!factor || isNaN(peso)) {
+                showToast("Por favor complete todos los datos del factor de éxito externo.", "error");
+                return;
+            }
+
+            state.efe.push({
+                id: "efe_" + Date.now().toString(),
+                tipo, factor, peso, calificacion
+            });
+
+            saveState();
+            renderEfeEfiTables();
+            renderFodaGrid(); // Autoalimentar FODA
+            document.getElementById("efe-factor").value = "";
+            document.getElementById("efe-peso").value = "";
+            showToast("Factor de éxito externo (EFE) incorporado.");
+        }
+
+        function deleteEfeItem(id) {
+            state.efe = state.efe.filter(x => x.id !== id);
+            saveState();
+            renderEfeEfiTables();
+            renderFodaGrid();
+            showToast("Factor externo eliminado.");
+        }
+
+        function addEfiItem() {
+            const tipo = document.getElementById("efi-tipo").value;
+            const factor = document.getElementById("efi-factor").value.trim();
+            const peso = parseFloat(document.getElementById("efi-peso").value);
+            const calificacion = parseInt(document.getElementById("efi-calif").value);
+
+            if (!factor || isNaN(peso)) {
+                showToast("Por favor complete todos los datos del factor de éxito interno.", "error");
+                return;
+            }
+
+            state.efi.push({
+                id: "efi_" + Date.now().toString(),
+                tipo, factor, peso, calificacion
+            });
+
+            saveState();
+            renderEfeEfiTables();
+            renderFodaGrid(); // Autoalimentar FODA
+            document.getElementById("efi-factor").value = "";
+            document.getElementById("efi-peso").value = "";
+            showToast("Factor de éxito interno (EFI) incorporado.");
+        }
+
+        function deleteEfiItem(id) {
+            state.efi = state.efi.filter(x => x.id !== id);
+            saveState();
+            renderEfeEfiTables();
+            renderFodaGrid();
+            showToast("Factor interno eliminado.");
+        }
+
+
+        // --- SISTEMA 5: MATRIZ PEYEA CONTROLLER & CALCULATION ---
+        function addPeyeaItem() {
+            const dim = document.getElementById("peyea-dim").value;
+            const score = parseFloat(document.getElementById("peyea-score").value);
+            const factor = document.getElementById("peyea-factor").value.trim();
+
+            if (!factor) {
+                showToast("Por favor ingrese la descripción del criterio.", "error");
+                return;
+            }
+            if (isNaN(score)) {
+                showToast("Por favor ingrese una calificación válida.", "error");
+                return;
+            }
+
+            // Validaciones de límites PEYEA
+            if ((dim === "FF" || dim === "FI") && (score < 1 || score > 6)) {
+                showToast("Para FF e FI, la puntuación debe ser de 1 a 6.", "error");
+                return;
+            }
+            if ((dim === "VC" || dim === "EE") && (score < -6 || score > -1)) {
+                showToast("Para VC y EE, la puntuación debe ser de -1 a -6.", "error");
+                return;
+            }
+
+            state.peyea.push({
+                id: Date.now().toString(),
+                dim,
+                factor,
+                score
+            });
+
+            saveState();
+            renderPeyeaMetrics();
+            drawPeyeaPlano();
+            document.getElementById("peyea-factor").value = "";
+            document.getElementById("peyea-score").value = "";
+            showToast("Factor PEYEA incorporado.");
+        }
+
+        function renderPeyeaMetrics() {
+            const dims = { FF: [], FI: [], VC: [], EE: [] };
+            state.peyea.forEach(f => {
+                if (dims[f.dim]) dims[f.dim].push(f.score);
+            });
+
+            const ffAvg = dims.FF.length ? (dims.FF.reduce((a,b)=>a+b, 0) / dims.FF.length) : 0;
+            const fiAvg = dims.FI.length ? (dims.FI.reduce((a,b)=>a+b, 0) / dims.FI.length) : 0;
+            const vcAvg = dims.VC.length ? (dims.VC.reduce((a,b)=>a+b, 0) / dims.VC.length) : 0;
+            const eeAvg = dims.EE.length ? (dims.EE.reduce((a,b)=>a+b, 0) / dims.EE.length) : 0;
+
+            const ffC = document.getElementById("peyea-ff-count");
+            const ffA = document.getElementById("peyea-ff-avg");
+            const fiC = document.getElementById("peyea-fi-count");
+            const fiA = document.getElementById("peyea-fi-avg");
+            const vcC = document.getElementById("peyea-vc-count");
+            const vcA = document.getElementById("peyea-vc-avg");
+            const eeC = document.getElementById("peyea-ee-count");
+            const eeA = document.getElementById("peyea-ee-avg");
+
+            if (ffC) ffC.innerText = `${dims.FF.length} Criterios`;
+            if (ffA) ffA.innerText = ffAvg.toFixed(2);
+            if (fiC) fiC.innerText = `${dims.FI.length} Criterios`;
+            if (fiA) fiA.innerText = fiAvg.toFixed(2);
+            if (vcC) vcC.innerText = `${dims.VC.length} Criterios`;
+            if (vcA) vcA.innerText = vcAvg.toFixed(2);
+            if (eeC) eeC.innerText = `${dims.EE.length} Criterios`;
+            if (eeA) eeA.innerText = eeAvg.toFixed(2);
+
+            const xCoord = (vcAvg + fiAvg);
+            const yCoord = (ffAvg + eeAvg);
+
+            const xCoordEl = document.getElementById("peyea-x-coord");
+            const yCoordEl = document.getElementById("peyea-y-coord");
+            if (xCoordEl) xCoordEl.innerText = xCoord.toFixed(2);
+            if (yCoordEl) yCoordEl.innerText = yCoord.toFixed(2);
+
+            let posture = "Equilibrada";
+            if (xCoord > 0 && yCoord > 0) posture = "Agresiva";
+            else if (xCoord < 0 && yCoord > 0) posture = "Conservadora";
+            else if (xCoord < 0 && yCoord < 0) posture = "Defensiva";
+            else if (xCoord > 0 && yCoord < 0) posture = "Competitiva";
+
+            const postEl = document.getElementById("peyea-posture");
+            const postDashEl = document.getElementById("dash-peyea-profile");
+            if (postEl) postEl.innerText = posture;
+            if (postDashEl) postDashEl.innerText = posture;
+        }
+
+        function drawPeyeaPlano() {
+            const canvas = document.getElementById("peyeaCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Quadrant zones
+            ctx.fillStyle = "rgba(16, 185, 129, 0.05)"; 
+            ctx.fillRect(cx, 0, cx, cy);
+            ctx.fillStyle = "rgba(79, 70, 229, 0.05)"; 
+            ctx.fillRect(0, 0, cx, cy);
+            ctx.fillStyle = "rgba(239, 68, 68, 0.05)"; 
+            ctx.fillRect(0, cy, cx, cy);
+            ctx.fillStyle = "rgba(245, 158, 11, 0.05)"; 
+            ctx.fillRect(cx, cy, cx, cy);
+
+            ctx.strokeStyle = "#94A3B8";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            ctx.strokeStyle = "#E2E8F0";
+            ctx.lineWidth = 1;
+            const step = cx / 6;
+            for(let i = 1; i <= 6; i++) {
+                ctx.beginPath(); ctx.moveTo(cx + i*step, cy - 4); ctx.lineTo(cx + i*step, cy + 4); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - i*step, cy - 4); ctx.lineTo(cx - i*step, cy + 4); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - 4, cy - i*step); ctx.lineTo(cx + 4, cy - i*step); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx - 4, cy + i*step); ctx.lineTo(cx + 4, cy + i*step); ctx.stroke();
+            }
+
+            ctx.font = "bold 9px sans-serif";
+            ctx.fillStyle = "#10B981"; ctx.fillText("AGRESIVO (+,+)", cx + 20, 30);
+            ctx.fillStyle = "#6366F1"; ctx.fillText("CONSERVADOR (-,+)", 15, 30);
+            ctx.fillStyle = "#EF4444"; ctx.fillText("DEFENSIVO (-,-)", 15, h - 20);
+            ctx.fillStyle = "#F59E0B"; ctx.fillText("COMPETITIVO (+,-)", cx + 20, h - 20);
+
+            const xCoordEl = document.getElementById("peyea-x-coord");
+            const yCoordEl = document.getElementById("peyea-y-coord");
+            const xVal = xCoordEl ? (parseFloat(xCoordEl.innerText) || 0) : 0;
+            const yVal = yCoordEl ? (parseFloat(yCoordEl.innerText) || 0) : 0;
+
+            const targetX = cx + (xVal * step);
+            const targetY = cy - (yVal * step);
+
+            ctx.strokeStyle = "#0D9488"; 
+            ctx.lineWidth = 4.5;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(targetX, targetY);
+            ctx.stroke();
+
+            ctx.fillStyle = "#0F766E";
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 7, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+
+        // --- SISTEMA 6: MATRIZ DE PORTAFOLIO BCG ---
+        function addBcgItem() {
+            const name = document.getElementById("bcg-name").value.trim();
+            const sales = parseFloat(document.getElementById("bcg-sales").value);
+            const ownShare = parseFloat(document.getElementById("bcg-own-share").value);
+            const compShare = parseFloat(document.getElementById("bcg-comp-share").value);
+            const growth = parseFloat(document.getElementById("bcg-growth").value);
+
+            if (!name || isNaN(sales) || isNaN(ownShare) || isNaN(compShare) || isNaN(growth)) {
+                showToast("Por favor, rellene todos los campos de la UEN.", "error");
+                return;
+            }
+
+            state.bcg.push({
+                id: "bcg_" + Date.now().toString(),
+                name, sales, ownShare, compShare, growth
+            });
+
+            saveState();
+            renderBcgTable();
+            drawBcgMatrix();
+
+            document.getElementById("bcg-name").value = "";
+            document.getElementById("bcg-sales").value = "";
+            document.getElementById("bcg-own-share").value = "";
+            document.getElementById("bcg-comp-share").value = "";
+            document.getElementById("bcg-growth").value = "";
+            showToast("Unidad Estratégica incorporada en BCG.");
+        }
+
+        function deleteBcgItem(id) {
+            state.bcg = state.bcg.filter(x => x.id !== id);
+            saveState();
+            renderBcgTable();
+            drawBcgMatrix();
+            showToast("UEN eliminada de portafolio.");
+        }
+
+        function renderBcgTable() {
+            const body = document.getElementById("bcg-table-body");
+            if (!body) return;
+            body.innerHTML = "";
+
+            state.bcg.forEach(item => {
+                const relShare = item.compShare > 0 ? (item.ownShare / item.compShare) : 1.0;
+                
+                // Categorizar cuadrante
+                let quadrant = "Perro";
+                if (relShare >= 1.0 && item.growth >= 10) quadrant = "Estrella";
+                else if (relShare < 1.0 && item.growth >= 10) quadrant = "Interrogante";
+                else if (relShare >= 1.0 && item.growth < 10) quadrant = "Vaca";
+
+                let quadColor = "bg-rose-100 text-rose-800";
+                if (quadrant === "Estrella") quadColor = "bg-emerald-100 text-emerald-800";
+                if (quadrant === "Interrogante") quadColor = "bg-amber-100 text-amber-800";
+                if (quadrant === "Vaca") quadColor = "bg-teal-100 text-teal-800";
+
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 text-xs";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${item.name}</td>
+                    <td class="p-3 font-bold text-slate-600">$${item.sales.toLocaleString()}</td>
+                    <td class="p-3 text-slate-700 font-medium">${relShare.toFixed(2)}x</td>
+                    <td class="p-3 text-slate-700 font-medium">${item.growth}%</td>
+                    <td class="p-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${quadColor}">${quadrant}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteBcgItem('${item.id}')" class="text-red-500 hover:text-red-700 font-bold">Quitar</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function drawBcgMatrix() {
+            const canvas = document.getElementById("bcgCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Dibujar cuadrantes del plano BCG
+            ctx.fillStyle = "rgba(16, 185, 129, 0.04)"; // Top-Left: Estrella
+            ctx.fillRect(0, 0, cx, cy);
+            ctx.fillStyle = "rgba(245, 158, 11, 0.04)"; // Top-Right: Interrogante
+            ctx.fillRect(cx, 0, cx, cy);
+            ctx.fillStyle = "rgba(13, 148, 136, 0.04)"; // Bottom-Left: Vaca
+            ctx.fillRect(0, cy, cx, cy);
+            ctx.fillStyle = "rgba(239, 68, 68, 0.04)"; // Bottom-Right: Perro
+            ctx.fillRect(cx, cy, cx, cy);
+
+            // Ejes centrales de corte
+            ctx.strokeStyle = "#64748B";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            // Textos descriptivos de BCG
+            ctx.font = "bold 9px sans-serif";
+            ctx.fillStyle = "#10B981"; ctx.fillText("ESTRELLA (Alto/Alto)", 15, 20);
+            ctx.fillStyle = "#F59E0B"; ctx.fillText("INTERROGANTE (Bajo/Alto)", cx + 15, 20);
+            ctx.fillStyle = "#0D9488"; ctx.fillText("VACA SACRA (Alto/Bajo)", 15, h - 15);
+            ctx.fillStyle = "#EF4444"; ctx.fillText("PERRO (Bajo/Bajo)", cx + 15, h - 15);
+
+            // Encontrar valor máximo de ventas para dimensionar esferas proporcionalmente
+            const maxSales = state.bcg.length > 0 ? Math.max(...state.bcg.map(u => u.sales)) : 1;
+
+            state.bcg.forEach(item => {
+                const relShare = item.compShare > 0 ? (item.ownShare / item.compShare) : 1.0;
+
+                // Mapeo cartesiano del plano
+                // Eje Y: Crecimiento de la Industria (0% a 20%) -> 10% es el centro (cy)
+                const mappedY = cy - ((item.growth - 10) * (cy / 10));
+
+                // Eje X: Participación relativa de mercado (Eje invertido en BCG clásico: izquierda es alto, derecha es bajo)
+                // Escala de 0.0x a 2.0x, centro de corte es 1.0x (cx)
+                const mappedX = cx - ((relShare - 1.0) * (cx / 1.0));
+
+                // Dibujar burbuja de tamaño proporcional a ventas (Rango radio: 6px a 24px)
+                const radius = 6 + (item.sales / maxSales) * 18;
+
+                ctx.fillStyle = "rgba(13, 148, 136, 0.7)"; // Burbuja corporativa VoltEcuador
+                ctx.beginPath();
+                ctx.arc(mappedX, mappedY, radius, 0, 2*Math.PI);
+                ctx.fill();
+
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Nombre UEN
+                ctx.fillStyle = "#1E293B";
+                ctx.font = "bold 8px sans-serif";
+                ctx.fillText(item.name, mappedX + radius + 3, mappedY + 3);
+            });
+        }
+
+
+        // --- SISTEMA 7: MCKINSEY & GRAN ESTRATEGIA CONTROLLER ---
+        function toggleMckinseySync() {
+            const isChecked = document.getElementById("mck-sync-efe-efi").checked;
+            state.mckinsey_sync = isChecked;
+
+            const manualContainer = document.getElementById("mck-manual-container");
+            const ySourceEl = document.getElementById("mck-y-source");
+            const xSourceEl = document.getElementById("mck-x-source");
+
+            if (isChecked) {
+                if (manualContainer) manualContainer.classList.add("opacity-40", "pointer-events-none");
+                if (ySourceEl) ySourceEl.innerText = "Alimentado por EFE";
+                if (xSourceEl) xSourceEl.innerText = "Alimentado por EFI";
+            } else {
+                if (manualContainer) manualContainer.classList.remove("opacity-40", "pointer-events-none");
+                if (ySourceEl) ySourceEl.innerText = "Alimentado Manualmente";
+                if (xSourceEl) xSourceEl.innerText = "Alimentado Manualmente";
+            }
+
+            saveState();
+            renderMckinsey();
+            drawGrandStrategy();
+            showToast(isChecked ? "Sincronización automática EFE/EFI habilitada." : "Entrada manual de portafolio McKinsey activada.");
+        }
+
+        function addMckinseyItem() {
+            const eje = document.getElementById("mck-eje").value;
+            const weight = parseFloat(document.getElementById("mck-weight").value);
+            const rating = parseFloat(document.getElementById("mck-rating").value);
+            const factor = document.getElementById("mck-factor").value.trim();
+
+            if (!factor || isNaN(weight) || isNaN(rating)) {
+                showToast("Por favor complete todos los datos del factor manual.", "error");
+                return;
+            }
+
+            state.mckinsey.push({
+                id: Date.now().toString(),
+                eje, factor, weight, rating
+            });
+
+            saveState();
+            renderMckinsey();
+            drawGrandStrategy();
+
+            document.getElementById("mck-factor").value = "";
+            document.getElementById("mck-weight").value = "";
+            document.getElementById("mck-rating").value = "";
+            showToast("Factor manual de portafolio incorporado.");
+        }
+
+        function deleteMckinsey(id) {
+            state.mckinsey = state.mckinsey.filter(x => x.id !== id);
+            saveState();
+            renderMckinsey();
+            drawGrandStrategy();
+            showToast("Factor eliminado.");
+        }
+
+        function renderMckinsey() {
+            const syncChecked = document.getElementById("mck-sync-efe-efi");
+            if (syncChecked) syncChecked.checked = state.mckinsey_sync;
+
+            const manualContainer = document.getElementById("mck-manual-container");
+            if (manualContainer) {
+                if (state.mckinsey_sync) {
+                    manualContainer.classList.add("opacity-40", "pointer-events-none");
+                } else {
+                    manualContainer.classList.remove("opacity-40", "pointer-events-none");
+                }
+            }
+
+            const body = document.getElementById("mck-table-body");
+            if (body) body.innerHTML = "";
+
+            let finalAtractivo = 1.0;
+            let finalFuerza = 1.0;
+
+            if (state.mckinsey_sync) {
+                // Cálculo automático directo de los totales ponderados de EFE y EFI
+                let efeWeightedTotal = 0;
+                state.efe.forEach(item => { efeWeightedTotal += (item.peso * item.calificacion); });
+                finalAtractivo = efeWeightedTotal > 0 ? efeWeightedTotal : 1.0;
+
+                let efiWeightedTotal = 0;
+                state.efi.forEach(item => { efiWeightedTotal += (item.peso * item.calificacion); });
+                finalFuerza = efiWeightedTotal > 0 ? efiWeightedTotal : 1.0;
+            } else {
+                // Cálculo manual basado en su tabla interna
+                let sumAtractivoW = 0, totalAtractivoPond = 0;
+                let sumFuerzaW = 0, totalFuerzaPond = 0;
+
+                state.mckinsey.forEach(item => {
+                    const weighted = item.weight * item.rating;
+                    if (item.eje === "atractivo") {
+                        sumAtractivoW += item.weight;
+                        totalAtractivoPond += weighted;
+                    } else {
+                        sumFuerzaW += item.weight;
+                        totalFuerzaPond += weighted;
+                    }
+
+                    if (body) {
+                        const tr = document.createElement("tr");
+                        tr.className = "hover:bg-slate-50 text-xs";
+                        tr.innerHTML = `
+                            <td class="p-3 font-semibold text-slate-700 capitalize">${item.eje}</td>
+                            <td class="p-3 text-slate-600 truncate max-w-[150px]">${item.factor}</td>
+                            <td class="p-3 font-medium">${item.weight.toFixed(2)}</td>
+                            <td class="p-3 text-center">${item.rating}</td>
+                            <td class="p-3 font-semibold">${weighted.toFixed(2)}</td>
+                            <td class="p-3 text-center">
+                                <button onclick="deleteMckinsey('${item.id}')" class="text-red-500 hover:text-red-700">Eliminar</button>
+                            </td>
+                        `;
+                        body.appendChild(tr);
+                    }
+                });
+
+                finalAtractivo = sumAtractivoW > 0 ? (totalAtractivoPond / sumAtractivoW) : 1.0;
+                finalFuerza = sumFuerzaW > 0 ? (totalFuerzaPond / sumFuerzaW) : 1.0;
+            }
+
+            const mckAtractivoEl = document.getElementById("mck-atractivo-score");
+            const mckFuerzaEl = document.getElementById("mck-fuerza-score");
+            if (mckAtractivoEl) mckAtractivoEl.innerText = finalAtractivo.toFixed(2);
+            if (mckFuerzaEl) mckFuerzaEl.innerText = finalFuerza.toFixed(2);
+        }
+
+        function drawGrandStrategy() {
+            const canvas = document.getElementById("grandStrategyCanvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Fondos suaves representativos de la Gran Estrategia
+            ctx.fillStyle = "rgba(16, 185, 129, 0.05)"; 
+            ctx.fillRect(cx, 0, cx, cy);
+            ctx.fillStyle = "rgba(99, 102, 241, 0.05)"; 
+            ctx.fillRect(0, 0, cx, cy);
+            ctx.fillStyle = "rgba(239, 68, 68, 0.05)"; 
+            ctx.fillRect(0, cy, cx, cy);
+            ctx.fillStyle = "rgba(245, 158, 11, 0.05)"; 
+            ctx.fillRect(cx, cy, cx, cy);
+
+            ctx.strokeStyle = "#94A3B8";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+            ctx.stroke();
+
+            // Rótulos de Cuadrantes de Gran Estrategia
+            ctx.font = "bold 8px sans-serif";
+            ctx.fillStyle = "#10B981"; ctx.fillText("CUADRANTE I: Fuerte / Crec. Rápido", cx + 8, 20);
+            ctx.fillStyle = "#6366F1"; ctx.fillText("CUADRANTE II: Débil / Crec. Rápido", 8, 20);
+            ctx.fillStyle = "#EF4444"; ctx.fillText("CUADRANTE III: Débil / Crec. Lento", 8, h - 15);
+            ctx.fillStyle = "#F59E0B"; ctx.fillText("CUADRANTE IV: Fuerte / Crec. Lento", cx + 8, h - 15);
+
+            // Mapeo cartesiano (Escala de 1.0 a 4.0 basada en EFE/EFI)
+            const mckAtractivoEl = document.getElementById("mck-atractivo-score");
+            const mckFuerzaEl = document.getElementById("mck-fuerza-score");
+            const atract = mckAtractivoEl ? (parseFloat(mckAtractivoEl.innerText) || 1) : 1;
+            const fuerza = mckFuerzaEl ? (parseFloat(mckFuerzaEl.innerText) || 1) : 1;
+
+            // Escalar: Atractivo (Eje Y: Crecimiento. Punto medio = 2.5)
+            // Escalar: Fuerza (Eje X: Competitividad. Punto medio = 2.5)
+            const mapX = cx + ((fuerza - 2.5) * (cx / 1.5));
+            const mapY = cy - ((atract - 2.5) * (cy / 1.5));
+
+            // Dibujar Punto
+            ctx.fillStyle = "#0D9488";
+            ctx.beginPath();
+            ctx.arc(mapX, mapY, 8, 0, 2*Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.font = "bold 9px sans-serif";
+            ctx.fillStyle = "#1E293B";
+            ctx.fillText("Posición Volt", mapX + 12, mapY + 3);
+        }
+
+
+        // --- SISTEMA 8: MATRIZ CUANTITATIVA MCPE ---
+        function addMcpeStrategy() {
+            const name = document.getElementById("mcpe-strategy-name").value.trim();
+            if (!name) { showToast("Por favor coloque el nombre de la estrategia.", "error"); return; }
+
+            const id = "strat_" + Date.now().toString();
+            const scores = {};
+            state.mcpe_factors.forEach(f => { scores[f.id] = 0; });
+
+            state.mcpe_strategies.push({ id, name, scores });
+            saveState();
+            renderMcpe();
+            document.getElementById("mcpe-strategy-name").value = "";
+            showToast("Nueva estrategia registrada en MCPE.");
+        }
+
+        // Registrar factor dinámico
+        function addMcpeFactor() {
+            const desc = document.getElementById("mcpe-factor-name").value.trim();
+            const weight = parseFloat(document.getElementById("mcpe-factor-weight").value);
+
+            if (!desc) { showToast("Debe ingresar la descripción del factor.", "error"); return; }
+            if (isNaN(weight) || weight <= 0 || weight > 1) { showToast("Ponderación incorrecta.", "error"); return; }
+
+            const id = "fact_" + Date.now().toString();
+            state.mcpe_factors.push({ id, desc, weight });
+
+            state.mcpe_strategies.forEach(strat => {
+                strat.scores[id] = 0;
+            });
+
+            saveState();
+            renderMcpe();
+            document.getElementById("mcpe-factor-name").value = "";
+            document.getElementById("mcpe-factor-weight").value = "";
+            showToast("Factor de éxito agregado a MCPE.");
+        }
+
+        function updateMcpeScore(strategyId, factorId, scoreValue) {
+            const strat = state.mcpe_strategies.find(s => s.id === strategyId);
+            if (strat) {
+                strat.scores[factorId] = parseInt(scoreValue) || 0;
+                saveState();
+                renderMcpe();
+            }
+        }
+
+        function deleteMcpeStrategy(id) {
+            state.mcpe_strategies = state.mcpe_strategies.filter(s => s.id !== id);
+            saveState();
+            renderMcpe();
+            showToast("Estrategia MCPE removida.");
+        }
+
+        function deleteMcpeFactor(id) {
+            state.mcpe_factors = state.mcpe_factors.filter(f => f.id !== id);
+            state.mcpe_strategies.forEach(strat => {
+                delete strat.scores[id];
+            });
+            saveState();
+            renderMcpe();
+            showToast("Factor crítico removido.");
+        }
+
+        function renderMcpe() {
+            const headerRow = document.getElementById("mcpe-header-row");
+            const bodyRows = document.getElementById("mcpe-body-rows");
+            const footerRow = document.getElementById("mcpe-footer-row");
+
+            if (!headerRow || !bodyRows || !footerRow) return;
+
+            headerRow.innerHTML = `
+                <th class="p-4 w-[350px]">Factores Críticos de Éxito</th>
+                <th class="p-4 w-[100px]">Peso P.</th>
+            `;
+            state.mcpe_strategies.forEach(strat => {
+                headerRow.innerHTML += `
+                    <th class="p-4 text-center border-l border-slate-700 min-w-[200px]" colspan="2">
+                        <div class="flex flex-col items-center justify-between">
+                            <span class="text-xs font-black tracking-tight leading-tight block mb-1 text-teal-300 truncate max-w-[180px]">${strat.name}</span>
+                            <button onclick="deleteMcpeStrategy('${strat.id}')" class="text-[10px] text-red-300 hover:text-red-500 font-bold uppercase tracking-wider">Eliminar</button>
+                        </div>
+                        <div class="grid grid-cols-2 text-[10px] mt-2 border-t border-slate-600 pt-1 font-semibold text-slate-300">
+                            <div>PA</div>
+                            <div>PTA</div>
+                        </div>
+                    </th>
+                `;
+            });
+
+            bodyRows.innerHTML = "";
+            let sumWeights = 0;
+
+            state.mcpe_factors.forEach(factor => {
+                sumWeights += factor.weight;
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50";
+
+                let factorHtml = `
+                    <td class="p-4 font-semibold text-slate-800 flex items-center justify-between">
+                        <span class="truncate max-w-[280px]" title="${factor.desc}">${factor.desc}</span>
+                        <button onclick="deleteMcpeFactor('${factor.id}')" class="text-red-400 hover:text-red-600 font-bold ml-2">×</button>
+                    </td>
+                    <td class="p-4 font-bold text-slate-600">${factor.weight.toFixed(2)}</td>
+                `;
+
+                state.mcpe_strategies.forEach(strat => {
+                    const currentScore = strat.scores[factor.id] || 0;
+                    const weightedScore = currentScore * factor.weight;
+
+                    factorHtml += `
+                        <td class="p-4 text-center border-l border-slate-100 bg-slate-50/50">
+                            <select onchange="updateMcpeScore('${strat.id}', '${factor.id}', this.value)" class="mx-auto w-16 text-xs px-1.5 py-1 rounded border border-slate-300 bg-white font-bold focus:ring-1 focus:ring-brand-primary outline-none">
+                                <option value="0" ${currentScore===0?'selected':''}>0</option>
+                                <option value="1" ${currentScore===1?'selected':''}>1</option>
+                                <option value="2" ${currentScore===2?'selected':''}>2</option>
+                                <option value="3" ${currentScore===3?'selected':''}>3</option>
+                                <option value="4" ${currentScore===4?'selected':''}>4</option>
+                            </select>
+                        </td>
+                        <td class="p-4 text-center text-xs font-bold text-slate-700 bg-slate-100/50">${weightedScore.toFixed(2)}</td>
+                    `;
+                });
+
+                tr.innerHTML = factorHtml;
+                bodyRows.appendChild(tr);
+            });
+
+            let footerHtml = `
+                <td class="p-4 text-slate-800">Total Suma de Pesos</td>
+                <td class="p-4 ${sumWeights > 1.01 || sumWeights < 0.99 ? 'text-red-600' : 'text-slate-800'}">${sumWeights.toFixed(2)}</td>
+            `;
+
+            let bestStratName = "Estrategias no parametrizadas";
+            let maxScore = -1;
+
+            state.mcpe_strategies.forEach(strat => {
+                let currentStratTotal = 0;
+                state.mcpe_factors.forEach(factor => {
+                    const sc = strat.scores[factor.id] || 0;
+                    currentStratTotal += sc * factor.weight;
+                });
+
+                if (currentStratTotal > maxScore) {
+                    maxScore = currentStratTotal;
+                    bestStratName = strat.name;
+                }
+
+                footerHtml += `
+                    <td class="p-4 text-center border-l border-slate-200 uppercase text-[10px] text-slate-500">Suma PTA</td>
+                    <td class="p-4 text-center text-sm font-black text-brand-primary bg-teal-50/50">${currentStratTotal.toFixed(2)}</td>
+                `;
+            });
+
+            footerRow.innerHTML = footerHtml;
+
+            // Elementos del widget del ganador (añadimos null-guards para evitar excepciones inesperadas)
+            const winnerTitleEl = document.getElementById("mcpe-winner-title");
+            const winnerScoreEl = document.getElementById("mcpe-winner-score");
+            const dashBestStratEl = document.getElementById("dash-best-strategy");
+
+            if (state.mcpe_strategies.length > 0 && state.mcpe_factors.length > 0) {
+                if (winnerTitleEl) winnerTitleEl.innerText = bestStratName;
+                if (winnerScoreEl) winnerScoreEl.innerText = maxScore.toFixed(2);
+                if (dashBestStratEl) dashBestStratEl.innerText = bestStratName;
+            } else {
+                if (winnerTitleEl) winnerTitleEl.innerText = "Añada factores y alternativas para calcular";
+                if (winnerScoreEl) winnerScoreEl.innerText = "0.00";
+                if (dashBestStratEl) dashBestStratEl.innerText = "No calculado";
+            }
+        }
+
+
+        // --- SISTEMA 9: POA (PLAN OPERATIVO ANUAL) & KPIs ---
+        function togglePoaForm() {
+            const form = document.getElementById("poa-form-container");
+            if (form) form.classList.toggle("hidden");
+        }
+
+        function addPoaRow() {
+            const obj = document.getElementById("poa-obj").value.trim();
+            const est = document.getElementById("poa-est").value.trim();
+            const act = document.getElementById("poa-act").value.trim();
+            const meta = document.getElementById("poa-meta").value.trim();
+            const kpi = document.getElementById("poa-kpi").value.trim();
+            const base = parseFloat(document.getElementById("poa-base").value);
+            const target = parseFloat(document.getElementById("poa-target").value);
+            const budget = parseFloat(document.getElementById("poa-budget").value);
+            const owner = document.getElementById("poa-owner").value.trim();
+            const prog = parseFloat(document.getElementById("poa-prog").value);
+
+            if (!obj || !est || !act || !kpi || isNaN(base) || isNaN(target) || isNaN(budget) || !owner || isNaN(prog)) {
+                showToast("Por favor complete toda la información del POA.", "error");
+                return;
+            }
+
+            state.poa.push({
+                id: Date.now().toString(),
+                obj, est, act, meta, kpi, base, target, budget, owner, prog
+            });
+
+            saveState();
+            renderPoaTable();
+            renderKpiSection();
+            togglePoaForm();
+
+            document.getElementById("poa-obj").value = "";
+            document.getElementById("poa-est").value = "";
+            document.getElementById("poa-act").value = "";
+            document.getElementById("poa-meta").value = "";
+            document.getElementById("poa-kpi").value = "";
+            document.getElementById("poa-base").value = "";
+            document.getElementById("poa-target").value = "";
+            document.getElementById("poa-budget").value = "";
+            document.getElementById("poa-owner").value = "";
+            document.getElementById("poa-prog").value = "";
+            showToast("Actividad POA e indicador KPI registrados.");
+        }
+
+        function updatePoaProg(id, newVal) {
+            const row = state.poa.find(p => p.id === id);
+            if (row) {
+                row.prog = parseFloat(newVal) || 0;
+                saveState();
+                renderPoaTable();
+                renderKpiSection();
+            }
+        }
+
+        function deletePoaRow(id) {
+            state.poa = state.poa.filter(p => p.id !== id);
+            saveState();
+            renderPoaTable();
+            renderKpiSection();
+            showToast("Fila del POA eliminada.");
+        }
+
+        function renderPoaTable() {
+            const body = document.getElementById("poa-table-body");
+            if (!body) return;
+            body.innerHTML = "";
+
+            state.poa.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 text-xs text-slate-700";
+
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-800">${row.obj}</td>
+                    <td class="p-3 text-slate-600">${row.est}</td>
+                    <td class="p-3 font-medium text-slate-700">${row.act}</td>
+                    <td class="p-3 text-slate-500">${row.meta || "N/D"}</td>
+                    <td class="p-3 text-brand-primary font-bold">${row.kpi}</td>
+                    <td class="p-3 text-center font-semibold text-slate-600">${row.base}%</td>
+                    <td class="p-3 text-center font-bold text-slate-800">${row.target}%</td>
+                    <td class="p-3 text-center font-bold text-slate-800">$${row.budget.toLocaleString()}</td>
+                    <td class="p-3 font-semibold text-slate-500">${row.owner}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center space-x-1.5">
+                            <input type="number" value="${row.prog}" min="0" max="100" onchange="updatePoaProg('${row.id}', this.value)" class="w-14 text-center border rounded py-0.5 font-bold focus:ring-1 focus:ring-brand-primary outline-none">
+                            <span class="font-bold text-slate-500">%</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center">
+                        <button onclick="deletePoaRow('${row.id}')" class="text-red-500 hover:text-red-700 font-bold">Quitar</button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function renderKpiSection() {
+            const selector = document.getElementById("kpi-selector");
+            if (!selector) return;
+            
+            const prevSelectedVal = selector.value;
+            selector.innerHTML = "";
+
+            if (state.poa.length === 0) {
+                selector.innerHTML = `<option value="">No hay KPIs registrados</option>`;
+                return;
+            }
+
+            state.poa.forEach(row => {
+                selector.innerHTML += `<option value="${row.id}">${row.kpi} - ${row.owner}</option>`;
+            });
+
+            if (prevSelectedVal && state.poa.some(r => r.id === prevSelectedVal)) {
+                selector.value = prevSelectedVal;
+            }
+
+            loadSelectedKpi();
+        }
+
+        function loadSelectedKpi() {
+            const selector = document.getElementById("kpi-selector");
+            if (!selector) return;
+
+            const selectId = selector.value;
+            const row = state.poa.find(p => p.id === selectId);
+
+            const displayTitleEl = document.getElementById("kpi-display-title");
+            const displayMetaEl = document.getElementById("kpi-display-meta");
+            const percentageTextEl = document.getElementById("kpi-percentage-text");
+            const currentValueInput = document.getElementById("kpi-current-value");
+            const barBaseEl = document.getElementById("kpi-bar-base");
+            const barActualEl = document.getElementById("kpi-bar-actual");
+            const barTargetEl = document.getElementById("kpi-bar-target");
+            const statusBadgeEl = document.getElementById("kpi-status-badge");
+
+            if (!row) {
+                if (displayTitleEl) displayTitleEl.innerText = "Seleccione un indicador estratégico";
+                if (percentageTextEl) percentageTextEl.innerText = "0%";
+                updateKpiCircle(0);
+                if (barBaseEl) barBaseEl.style.height = "0%";
+                if (barActualEl) barActualEl.style.height = "0%";
+                return;
+            }
+
+            if (displayTitleEl) displayTitleEl.innerText = `${row.kpi} (Estrategia: ${row.est})`;
+            if (displayMetaEl) displayMetaEl.innerText = `Línea Base: ${row.base}% | Meta: ${row.target}% | Responsable: ${row.owner}`;
+            if (percentageTextEl) percentageTextEl.innerText = `${row.prog}%`;
+            if (currentValueInput) currentValueInput.value = row.prog;
+
+            updateKpiCircle(row.prog);
+
+            if (barBaseEl) barBaseEl.style.height = `${row.base}%`;
+            if (barActualEl) barActualEl.style.height = `${row.prog}%`;
+            if (barTargetEl) barTargetEl.style.height = `${row.target}%`;
+
+            if (statusBadgeEl) {
+                if (row.prog >= row.target) {
+                    statusBadgeEl.className = "font-bold text-brand-success px-2.5 py-0.5 rounded-full bg-emerald-50";
+                    statusBadgeEl.innerText = "Meta Superada / Óptimo";
+                } else if (row.prog >= (row.target * 0.7)) {
+                    statusBadgeEl.className = "font-bold text-brand-accent px-2.5 py-0.5 rounded-full bg-amber-50";
+                    statusBadgeEl.innerText = "En Avance Aceptable";
+                } else {
+                    statusBadgeEl.className = "font-bold text-red-500 px-2.5 py-0.5 rounded-full bg-red-50";
+                    statusBadgeEl.innerText = "En Alerta Temprana";
+                }
+            }
+        }
+
+        function updateKpiCircle(percent) {
+            const circle = document.getElementById("kpi-progress-circle");
+            if (!circle) return;
+            const r = 58;
+            const circ = 2 * Math.PI * r; 
+            const offset = circ - (percent / 100) * circ;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function updateKpiValue() {
+            const selector = document.getElementById("kpi-selector");
+            if (!selector) return;
+            
+            const selectId = selector.value;
+            const valueInput = document.getElementById("kpi-current-value");
+            const newVal = valueInput ? parseFloat(valueInput.value) : NaN;
+
+            if (isNaN(newVal) || newVal < 0 || newVal > 100) {
+                showToast("Por favor inserte un avance entre 0 y 100.", "error");
+                return;
+            }
+
+            updatePoaProg(selectId, newVal);
+            showToast("Progreso del KPI actualizado.");
+        }
+
+        // --- DASHBOARD METRICS SUMMARY ---
+        function updateDashboardMetrics() {
+            // PESTEL
+            const pCount = document.getElementById("dash-pestel-count");
+            if (pCount) pCount.innerText = `${state.pestel.length} Factores`;
+
+            // Cumplimiento del POA
+            const pProg = document.getElementById("dash-poa-progress");
+            if (pProg) {
+                if (state.poa.length > 0) {
+                    const totalP = state.poa.reduce((acc, row) => acc + row.prog, 0);
+                    const avg = totalP / state.poa.length;
+                    pProg.innerText = `${avg.toFixed(0)}%`;
+                } else {
+                    pProg.innerText = "0%";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
